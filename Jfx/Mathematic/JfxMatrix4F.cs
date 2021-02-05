@@ -143,5 +143,69 @@ namespace Jfx.Mathematic
                 1.0f
             );
         }
+        
+        public static JfxMatrix4F LookAtRH(in JfxVector3F cameraPosition, in JfxVector3F cameraTarget, in JfxVector3F cameraUpVector)
+        {
+            var zaxis = (cameraPosition - cameraTarget).Normilize();
+            var xaxis = cameraUpVector.CrossProduct(zaxis).Normilize();
+            var yaxis = zaxis.CrossProduct(xaxis);
+
+            //var transformation = new JfxMatrix4F(
+            //    xaxis.X, yaxis.X, zaxis.X, 0,
+            //    xaxis.Y, yaxis.Y, zaxis.Y, 0,
+            //    xaxis.Z, yaxis.Z, zaxis.Z, 0,
+            //    0, 0, 0, 1
+            //);
+
+            //var translation = new JfxMatrix4F(
+            //    1, 0, 0, 0,
+            //    0, 1, 0, 0,
+            //    0, 0, 1, 0,
+            //    -cameraPosition.X, -cameraPosition.Y, -cameraPosition.Z, 1
+            //);
+
+            //  translation * transformation == new JfxMatrix4F(
+            //    xaxis.X, yaxis.X, zaxis.X, 0,
+            //    xaxis.Y, yaxis.Y, zaxis.Y, 0,
+            //    xaxis.Z, yaxis.Z, zaxis.Z, 0,
+            //    -xaxis.DotProduct(cameraPosition), -yaxis.DotProduct(cameraPosition), -zaxis.DotProduct(cameraPosition), 1
+            //);
+            // that's why we have dot product for translations (just try to multiply by yourself)
+
+            /*
+             * x = x' + a;  ==> x' = x - a;
+             * y = y' + b;  ==> y' = y - b;
+             * that's why we have minus for translations
+             */
+
+            return new JfxMatrix4F(
+                xaxis.X, yaxis.X, zaxis.X, 0,
+                xaxis.Y, yaxis.Y, zaxis.Y, 0,
+                xaxis.Z, yaxis.Z, zaxis.Z, 0,
+                -xaxis.DotProduct(cameraPosition), -yaxis.DotProduct(cameraPosition), -zaxis.DotProduct(cameraPosition), 1
+            );
+        }
+
+        public static JfxMatrix4F PerspectiveFieldOfViewRH(float fieldOfViewY, float aspectRatio, float znearPlane, float zfarPlane)
+        {
+            float h = 1 / MathF.Tan(fieldOfViewY * 0.5f);
+            float w = h / aspectRatio;
+            return new JfxMatrix4F(
+                w, 0, 0, 0,
+                0, h, 0, 0,
+                0, 0, (znearPlane + zfarPlane) / (zfarPlane - znearPlane), -1,
+                0, 0, 2 * znearPlane * zfarPlane / (zfarPlane - znearPlane), 0
+            );
+        }
+
+        public static JfxMatrix4F OrthographicRH(float width, float height, float znearPlane, float zfarPlane)
+        {
+            return new JfxMatrix4F(
+                2 / width, 0, 0, 0,
+                0, 2 / height, 0, 0,
+                0, 0, 1 / (znearPlane - zfarPlane), 0,
+                0, 0, znearPlane / (znearPlane - zfarPlane), 1
+            );
+        }
     }
 }

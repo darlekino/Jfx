@@ -78,8 +78,8 @@ namespace Jfx.App.UI.Gdi
             graphicsHostDeviceContext = graphicsHost.GetHdc();
             consolas12 = new Font("Consolas", 12);
 
-            CreateSurface(SurfaceWidth, SurfaceHeight);
-            CreateBuffers(BufferWidth, BufferHeight);
+            CreateSurface(Viewport.Size);
+            CreateBuffers(BufferSize);
         }
 
         public override void Dispose()
@@ -96,15 +96,15 @@ namespace Jfx.App.UI.Gdi
 
             base.Dispose();
         }
-        private void CreateBuffers(int width, int height)
+        private void CreateBuffers(in JfxSize size)
         {
-            backBuffer = new DirectBitmap(width, height);
+            backBuffer = new DirectBitmap(size.Width, size.Height);
         }
 
-        protected override void ResizeBuffers(int width, int height)
+        protected override void ResizeBuffers(in JfxSize size)
         {
             DisposeBuffers();
-            CreateBuffers(width, height);
+            CreateBuffers(size);
         }
 
         private void DisposeBuffers()
@@ -113,16 +113,17 @@ namespace Jfx.App.UI.Gdi
             backBuffer = default;
         }
 
-        private void CreateSurface(int width, int height)
+        private void CreateSurface(in JfxSize size)
         {
-            bufferedGraphics = BufferedGraphicsManager.Current.Allocate(graphicsHostDeviceContext, new Rectangle(0, 0, width, height));
+            var rectangle = new Rectangle(0, 0, size.Width, size.Height);
+            bufferedGraphics = BufferedGraphicsManager.Current.Allocate(graphicsHostDeviceContext, rectangle);
             bufferedGraphics.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
         }
 
-        protected override void ResizeSurface(int width, int height)
+        protected override void ResizeSurface(in JfxSize size)
         {
             DisposeSurface();
-            CreateSurface(width, height);
+            CreateSurface(size);
         }
 
         private void DisposeSurface()
@@ -171,70 +172,6 @@ namespace Jfx.App.UI.Gdi
 
         private void DrawPolyline(Pen pen, Space space, IReadOnlyList<JfxVector3F> points)
         {
-            static JfxMatrix4F LookAtRH(in JfxVector3F cameraPosition, in JfxVector3F cameraTarget, in JfxVector3F cameraUpVector)
-            {
-                var zaxis = (cameraPosition - cameraTarget).Normilize();
-                var xaxis = cameraUpVector.CrossProduct(zaxis).Normilize();
-                var yaxis = zaxis.CrossProduct(xaxis);
-
-                //var transformation = new JfxMatrix4F(
-                //    xaxis.X, yaxis.X, zaxis.X, 0,
-                //    xaxis.Y, yaxis.Y, zaxis.Y, 0,
-                //    xaxis.Z, yaxis.Z, zaxis.Z, 0,
-                //    0, 0, 0, 1
-                //);
-
-                //var translation = new JfxMatrix4F(
-                //    1, 0, 0, 0,
-                //    0, 1, 0, 0,
-                //    0, 0, 1, 0,
-                //    -cameraPosition.X, -cameraPosition.Y, -cameraPosition.Z, 1
-                //);
-
-                //  translation * transformation == new JfxMatrix4F(
-                //    xaxis.X, yaxis.X, zaxis.X, 0,
-                //    xaxis.Y, yaxis.Y, zaxis.Y, 0,
-                //    xaxis.Z, yaxis.Z, zaxis.Z, 0,
-                //    -xaxis.DotProduct(cameraPosition), -yaxis.DotProduct(cameraPosition), -zaxis.DotProduct(cameraPosition), 1
-                //);
-                // that's why we have dot product for translations (just try to multiply by yourself)
-
-                /*
-                 * x = x' + a;  ==> x' = x - a;
-                 * y = y' + b;  ==> y' = y - b;
-                 * that's why we have minus for translations
-                 */
-
-                return new JfxMatrix4F(
-                    xaxis.X, yaxis.X, zaxis.X, 0,
-                    xaxis.Y, yaxis.Y, zaxis.Y, 0,
-                    xaxis.Z, yaxis.Z, zaxis.Z, 0,
-                    -xaxis.DotProduct(cameraPosition), -yaxis.DotProduct(cameraPosition), -zaxis.DotProduct(cameraPosition), 1
-                );
-            }
-
-            static JfxMatrix4F PerspectiveFovRH(float fieldOfViewY, float aspectRatio, float znearPlane, float zfarPlane)
-            {
-                float h = 1 / MathF.Tan(fieldOfViewY * 0.5f);
-                float w = h / aspectRatio;
-                return new JfxMatrix4F(
-                    w, 0, 0, 0,
-                    0, h, 0, 0,
-                    0, 0, (znearPlane + zfarPlane) / (zfarPlane - znearPlane), -1,
-                    0, 0, 2 * znearPlane * zfarPlane / (zfarPlane - znearPlane), 0
-                );
-            }
-
-            static JfxMatrix4F OrthographicRH(float width, float height, float znearPlane, float zfarPlane)
-            {
-                return new JfxMatrix4F(
-                    2 / width, 0, 0, 0,
-                    0, 2 / height, 0, 0,
-                    0, 0, 1 / (znearPlane - zfarPlane), 0,
-                    0, 0, znearPlane / (znearPlane - zfarPlane), 1
-                );
-            }
-
             switch (space)
             {
                 case Space.World:
@@ -242,27 +179,13 @@ namespace Jfx.App.UI.Gdi
                     var angle = t * MathF.PI * 2;
                     var radius = 2;
 
-                    // view matrix
-                    var cameraPosition = new JfxVector3F(MathF.Sin(angle) * radius, MathF.Cos(angle) * radius, 1);
-                    var cameraTarget = new JfxVector3F(0, 0, 0);
-                    var cameraUpVector = new JfxVector3F(0, 0, 1);
-                    var viewMatrix = LookAtRH(cameraPosition, cameraTarget, cameraUpVector);
+                    Camera.UpdatePosition(new JfxVector3F(MathF.Sin(angle) * radius, MathF.Cos(angle) * radius, 1));
 
+                    var viewMatrix = Camera.Transformation;
+                    var projectionMatrix = Projection.Transformation;
+                    var viewportMatrix = Viewport.Transformation;
 
-                    var fovY = MathF.PI * 0.5f;
-                    var aspectRatio = Viewport.AspectRatio;
-                    var nearPlane = 0.001f;
-                    var farPlane = 1000;
-                    var perspectiveMatrix = PerspectiveFovRH(fovY, aspectRatio, nearPlane, farPlane);
-
-
-                    var filedHeight = 3f;
-                    var filedWidth = filedHeight * aspectRatio;
-                    var orthographicMatrix = OrthographicRH(filedWidth, filedHeight, nearPlane, farPlane);
-
-                    var projectionMatrix = perspectiveMatrix;
-
-                    var tramsformation = viewMatrix * projectionMatrix * Viewport.Transformation;
+                    var tramsformation = viewMatrix * projectionMatrix * viewportMatrix;
                     DrawPolylineScreenSpace(pen, Transform(tramsformation, points));
                     break;
                 case Space.View:
@@ -360,7 +283,13 @@ namespace Jfx.App.UI.Gdi
             DrawGeometry();
 
             // flush and swap buffers
-            bufferedGraphics.Graphics.DrawImage(backBuffer.Bitmap, new RectangleF(0, 0, Viewport.Width, Viewport.Height), new RectangleF(-0.5f, -0.5f, BufferWidth, BufferHeight), GraphicsUnit.Pixel);
+            bufferedGraphics.Graphics.DrawImage(
+                backBuffer.Bitmap, 
+                new RectangleF(0, 0, Viewport.Size.Width, Viewport.Size.Height), 
+                new RectangleF(-0.5f, -0.5f, BufferSize.Width, BufferSize.Height), 
+                GraphicsUnit.Pixel
+            );
+
             bufferedGraphics.Render(graphicsHostDeviceContext);
         }
     }
