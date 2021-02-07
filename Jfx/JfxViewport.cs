@@ -1,8 +1,9 @@
 ﻿using Jfx.Mathematic;
+using System;
 
 namespace Jfx
 {
-    public class JfxViewport
+    public class JfxViewport : JfxTransformable
     {
         private int x;
         private int y;
@@ -10,7 +11,6 @@ namespace Jfx
         private float minZ;
         private float maxZ;
         private float aspectRatio;
-        private JfxMatrix4F transformation;
 
         public JfxViewport(int x, int y, in JfxSize size, float minZ, float maxZ)
         {
@@ -59,9 +59,10 @@ namespace Jfx
 
         public float AspectRatio => aspectRatio;
         public ref readonly JfxSize Size => ref size;
-        public ref readonly JfxMatrix4F Transformation => ref transformation;
 
-        private void UpdateTransformation()
+        public event EventHandler SizeChanged;
+
+        internal protected override void UpdateTransformation()
         {
             float halfOfWidth = 0.5f * size.Width;
             float halfOfHeight = 0.5f * size.Height;
@@ -72,6 +73,8 @@ namespace Jfx
                 0, 0, maxZ - minZ, 0,
                 x + halfOfWidth, y + halfOfHeight, minZ, 1
             );
+
+            base.UpdateTransformation();
         }
 
         public void UpdateSize(in JfxSize size)
@@ -79,6 +82,8 @@ namespace Jfx
             this.size = size;
             aspectRatio = (float)size.Width / size.Height;
             UpdateTransformation();
+
+            SizeChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Update(int x, int y, in JfxSize size, float minZ, float maxZ)
@@ -90,6 +95,8 @@ namespace Jfx
             this.maxZ = maxZ;
             aspectRatio = (float)size.Width / size.Height;
             UpdateTransformation();
+
+            SizeChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Jfx.App.UI
 {
     internal interface IWindow : IDisposable
     {
+        JfxCamera Camera { get; }
         void Render();
     }
 }

@@ -2,12 +2,11 @@
 
 namespace Jfx
 {
-    public abstract class JfxProjection
+    public abstract class JfxProjection : JfxTransformable
     {
         protected internal float nearPlane;
         protected internal float farPlane;
         protected internal float aspectRatio;
-        protected internal JfxMatrix4F transformation;
 
         public JfxProjection(float nearPlane, float farPlane)
         {
@@ -44,10 +43,6 @@ namespace Jfx
             }
             get => aspectRatio;
         }
-
-        public ref readonly JfxMatrix4F Transformation => ref transformation;
-
-        protected internal abstract void UpdateTransformation();
     }
 
     public class JfxPerspectiveProjection : JfxProjection
@@ -75,6 +70,7 @@ namespace Jfx
         protected internal override void UpdateTransformation()
         {
             transformation = JfxMatrix4F.PerspectiveFieldOfViewRH(fieldOfViewY, aspectRatio, nearPlane, farPlane);
+            base.UpdateTransformation();
         }
 
         public void Update(float nearPlane, float farPlane, float fieldOfViewY, float aspectRatio)
@@ -112,6 +108,7 @@ namespace Jfx
         protected internal override void UpdateTransformation()
         {
             transformation = JfxMatrix4F.OrthographicRH(fieldHeight * aspectRatio, fieldHeight, nearPlane, farPlane);
+            base.UpdateTransformation();
         }
 
         public void Update(float nearPlane, float farPlane, float fieldHeight, float aspectRatio)

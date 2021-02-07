@@ -175,18 +175,7 @@ namespace Jfx.App.UI.Gdi
             switch (space)
             {
                 case Space.World:
-                    var t = GetDeltaTime(new TimeSpan(0, 0, 0, 10));
-                    var angle = t * MathF.PI * 2;
-                    var radius = 2;
-
-                    Camera.UpdatePosition(new JfxVector3F(MathF.Sin(angle) * radius, MathF.Cos(angle) * radius, 1));
-
-                    var viewMatrix = Camera.Transformation;
-                    var projectionMatrix = Projection.Transformation;
-                    var viewportMatrix = Viewport.Transformation;
-
-                    var tramsformation = viewMatrix * projectionMatrix * viewportMatrix;
-                    DrawPolylineScreenSpace(pen, Transform(tramsformation, points));
+                    DrawPolylineScreenSpace(pen, Transform(Transformation, points));
                     break;
                 case Space.View:
                     DrawPolylineScreenSpace(pen, Transform(Viewport.Transformation, points));
