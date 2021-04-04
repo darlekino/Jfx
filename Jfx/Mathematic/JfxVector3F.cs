@@ -46,11 +46,9 @@ namespace Jfx.Mathematic
             );
         }
 
-        public float Length()
-            => MathF.Sqrt(X * X + Y * Y + Z * Z);
+        public float Length() => MathF.Sqrt(X * X + Y * Y + Z * Z);
 
-        public JfxUnitVector3F Normilize()
-            => JfxUnitVector3F.Normalize(this);
+        public JfxUnitVector3F Normilize() => JfxUnitVector3F.Normalize(this);
 
         public static JfxVector3F operator +(in JfxVector3F left, in JfxVector3F right)
         {

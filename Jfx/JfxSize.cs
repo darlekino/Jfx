@@ -6,6 +6,26 @@ using System.Threading.Tasks;
 
 namespace Jfx
 {
+    public class JfxSizeEventArgs : EventArgs
+    {
+        private readonly JfxSize size;
+        public ref readonly JfxSize Size => ref size;
+        public JfxSizeEventArgs(in JfxSize size)
+        {
+            static JfxSize Sanitize(int width, int height)
+            {
+                if (width < 1 || height < 1)
+                {
+                    return new JfxSize(1, 1);
+                }
+
+                return new JfxSize(width, height);
+            }
+
+            this.size = Sanitize(size.Width, size.Height);
+        }
+    }
+
     public readonly struct JfxSize
     {
         public readonly int Width;

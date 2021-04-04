@@ -3,100 +3,52 @@ using System;
 
 namespace Jfx
 {
-    public class JfxViewport : JfxTransformable
+    public class JfxViewport
     {
-        private int x;
-        private int y;
+        public readonly int X;
+        public readonly int Y;
+        public readonly float MinZ;
+        public readonly float MaxZ;
+        private JfxMatrix4F transformation;
         private JfxSize size;
-        private float minZ;
-        private float maxZ;
-        private float aspectRatio;
+
+        public float AspectRatio { get; private set; }
+        public JfxSize Size
+        {
+            get => size;
+            set
+            {
+                size = value;
+                Update();
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public ref readonly JfxMatrix4F Transformation => ref transformation;
+        public event EventHandler Changed;
 
         public JfxViewport(int x, int y, in JfxSize size, float minZ, float maxZ)
         {
-            Update(x, y, size, minZ, maxZ);
+            X = x;
+            Y = y;
+            MinZ = minZ;
+            MaxZ = maxZ;
+            Size = size;
+            Update();
         }
 
-        public int X
+        private void Update()
         {
-            set 
-            {
-                x = value;
-                UpdateTransformation();
-            }
-            get => x;
-        }
+            AspectRatio = (float)size.Width / size.Height;
 
-        public int Y
-        {
-            set
-            {
-                y = value;
-                UpdateTransformation();
-            }
-            get => y;
-        }
-
-        public float MinZ
-        {
-            set
-            {
-                minZ = value;
-                UpdateTransformation();
-            }
-            get => minZ;
-        }
-
-        public float MaxZ
-        {
-            set
-            {
-                maxZ = value;
-                UpdateTransformation();
-            }
-            get => maxZ;
-        }
-
-        public float AspectRatio => aspectRatio;
-        public ref readonly JfxSize Size => ref size;
-
-        public event EventHandler SizeChanged;
-
-        internal protected override void UpdateTransformation()
-        {
             float halfOfWidth = 0.5f * size.Width;
             float halfOfHeight = 0.5f * size.Height;
 
             transformation = new JfxMatrix4F(
                 halfOfWidth, 0, 0, 0,
                 0, -halfOfHeight, 0, 0,
-                0, 0, maxZ - minZ, 0,
-                x + halfOfWidth, y + halfOfHeight, minZ, 1
+                0, 0, MaxZ - MinZ, 0,
+                X + halfOfWidth, Y + halfOfHeight, MinZ, 1
             );
-
-            base.UpdateTransformation();
-        }
-
-        public void UpdateSize(in JfxSize size)
-        {
-            this.size = size;
-            aspectRatio = (float)size.Width / size.Height;
-            UpdateTransformation();
-
-            SizeChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Update(int x, int y, in JfxSize size, float minZ, float maxZ)
-        {
-            this.x = x;
-            this.y = y;
-            this.size = size;
-            this.minZ = minZ;
-            this.maxZ = maxZ;
-            aspectRatio = (float)size.Width / size.Height;
-            UpdateTransformation();
-
-            SizeChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }

@@ -1,17 +1,12 @@
-﻿using Jfx.App.UI.Inputs;
-using Jfx.Mathematic;
+﻿using Jfx.Mathematic;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Runtime.InteropServices;
 
-namespace Jfx.App.UI.Gdi
+namespace Jfx.GDI
 {
-    internal class GdiWindow : Window
+    public class GDI3dScene : IJfx3DScene
     {
         enum Space
         {
@@ -20,116 +15,84 @@ namespace Jfx.App.UI.Gdi
             Screen
         }
 
-        class DirectBitmap : IDisposable
-        {
-            public int Width { get; }
-            public int Height { get; }
-            public int[] Buffer { get; private set; }
-            private GCHandle BufferHandle { get; set; }
-            public Bitmap Bitmap { get; private set; }
-            public Graphics Graphics { get; private set; }
-
-            public DirectBitmap(int width, int height)
-            {
-                Width = width;
-                Height = height;
-                Buffer = new int[width * height];
-                BufferHandle = GCHandle.Alloc(Buffer, GCHandleType.Pinned);
-                Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BufferHandle.AddrOfPinnedObject());
-                Graphics = Graphics.FromImage(Bitmap);
-            }
-
-            public void Dispose()
-            {
-                Graphics.Dispose();
-                Graphics = default;
-
-                Bitmap.Dispose();
-                Bitmap = default;
-
-                BufferHandle.Free();
-                BufferHandle = default;
-
-                Buffer = default;
-            }
-
-            public void GetXY(int index, out int x, out int y)
-            {
-                y = index / Width;
-                x = index - y * Width;
-            }
-
-            public int GetIndex(int x, int y) => x + y * Width;
-            public void SetArgb(int x, int y, int argb) => Buffer[GetIndex(x, y)] = argb;
-            public int GetArgb(int x, int y) => Buffer[GetIndex(x, y)];
-            public void SetPixel(int x, int y, in Color color) => SetArgb(x, y, color.ToArgb());
-            public Color GetPixel(int x, int y) => Color.FromArgb(GetArgb(x, y));
-        }
-
-        private Graphics graphicsHost;
-        private IntPtr graphicsHostDeviceContext;
+        private readonly Graphics graphics;
+        private readonly IntPtr graphicsDeviceContext;
         private BufferedGraphics bufferedGraphics;
         private DirectBitmap backBuffer;
         private Font consolas12;
+        private JfxMatrix4F transformation;
 
-        public GdiWindow(IntPtr hostHandle, IInput input) : base(hostHandle, input)
+        public JfxCamera Camera { get; }
+        public JfxProjection Projection { get; }
+        public JfxViewport Viewport { get; }
+        public event EventHandler<JfxSizeEventArgs> WindowResized;
+
+        public GDI3dScene(Graphics graphics, JfxCamera camera, JfxProjection projection, JfxViewport viewport, in JfxSize windowSize)
         {
-            graphicsHost = Graphics.FromHwnd(HostHandle);
-            graphicsHostDeviceContext = graphicsHost.GetHdc();
-            consolas12 = new Font("Consolas", 12);
+            Camera = camera;
+            Projection = projection;
+            Viewport = viewport;
+            UpdateTransformation();
 
+            Camera.Changed += OnTransformationChanged;
+            Viewport.Changed += OnTransformationChanged;
+            WindowResized += OnWindowResized;
             CreateSurface(Viewport.Size);
-            CreateBuffers(BufferSize);
+            CreateBuffers(windowSize);
+
+            this.graphics = graphics;
+            graphicsDeviceContext = graphics.GetHdc();
+            consolas12 = new Font("Consolas", 12);
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             consolas12.Dispose();
             consolas12.Dispose();
 
-            DisposeSurface();
-            DisposeBuffers();
+            bufferedGraphics.Dispose();
+            backBuffer.Dispose();
 
-            graphicsHost.ReleaseHdc(graphicsHostDeviceContext);
-
-            graphicsHost.Dispose();
-
-            base.Dispose();
+            graphics.ReleaseHdc(graphicsDeviceContext);
+            graphics.Dispose();
         }
+
+        private void UpdateTransformation() => transformation = Camera.Transformation * Projection.Transformation * Viewport.Transformation;
+
+        private void OnTransformationChanged(object _, EventArgs __)
+        {
+            UpdateTransformation();
+        }
+
+        private void OnWindowResized(object _, JfxSizeEventArgs e)
+        {
+            Viewport.Size = e.Size;
+            ResizeBuffers(e.Size);
+            ResizeSurface(e.Size);
+        }
+
         private void CreateBuffers(in JfxSize size)
         {
             backBuffer = new DirectBitmap(size.Width, size.Height);
         }
 
-        protected override void ResizeBuffers(in JfxSize size)
-        {
-            DisposeBuffers();
-            CreateBuffers(size);
-        }
-
-        private void DisposeBuffers()
+        protected void ResizeBuffers(in JfxSize size)
         {
             backBuffer.Dispose();
-            backBuffer = default;
+            CreateBuffers(size);
         }
 
         private void CreateSurface(in JfxSize size)
         {
             var rectangle = new Rectangle(0, 0, size.Width, size.Height);
-            bufferedGraphics = BufferedGraphicsManager.Current.Allocate(graphicsHostDeviceContext, rectangle);
+            bufferedGraphics = BufferedGraphicsManager.Current.Allocate(graphicsDeviceContext, rectangle);
             bufferedGraphics.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
         }
 
-        protected override void ResizeSurface(in JfxSize size)
-        {
-            DisposeSurface();
-            CreateSurface(size);
-        }
-
-        private void DisposeSurface()
+        protected void ResizeSurface(in JfxSize size)
         {
             bufferedGraphics.Dispose();
-            bufferedGraphics = default;
+            CreateSurface(size);
         }
 
         private float GetDeltaTime(TimeSpan periodDuration)
@@ -207,7 +170,7 @@ namespace Jfx.App.UI.Gdi
 
 
         private static readonly IReadOnlyList<IReadOnlyList<JfxVector3F>> CubePolylines;
-        static GdiWindow()
+        static GDI3dScene()
         {
             var points = new[]
             {
@@ -263,7 +226,7 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        protected override void RenderInternal()
+         public void RenderInternal()
         {
             backBuffer.Graphics.Clear(Color.Black);
             backBuffer.Graphics.DrawString(Fps.ToString(), consolas12, Brushes.Red, 0, 0);
@@ -272,9 +235,15 @@ namespace Jfx.App.UI.Gdi
             DrawGeometry();
 
             // flush and swap buffers
-            bufferedGraphics.Graphics.DrawImage(backBuffer.Bitmap, new RectangleF(0, 0, Viewport.Size.Width, Viewport.Size.Height), new RectangleF(-0.5f, -0.5f, BufferSize.Width, BufferSize.Height), GraphicsUnit.Pixel);
+            bufferedGraphics.Graphics.DrawImage(
+                backBuffer.Bitmap,
+                new RectangleF(0, 0, Viewport.Size.Width, Viewport.Size.Height),
+                new RectangleF(-0.5f, -0.5f, BufferSize.Width, BufferSize.Height),
+                GraphicsUnit.Pixel
+            );
 
             bufferedGraphics.Render(graphicsHostDeviceContext);
         }
     }
+}
 }
