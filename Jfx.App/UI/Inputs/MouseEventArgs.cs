@@ -3,9 +3,9 @@ using System.Drawing;
 
 namespace Jfx.App.UI.Inputs
 {
-    internal class MouseEventArgs : EventArgs
+    public class MouseEventArgs : EventArgs
     {
-        public int X { get; }
+        public int X { get; set; }
         public int Y { get; set; }
         public MouseButtons Buttons { get; }
         public int WheelDelta { get; }

@@ -2,7 +2,7 @@
 
 namespace Jfx.App.UI.Inputs
 {
-    internal class KeyEventArgs : EventArgs
+    public class KeyEventArgs : EventArgs
     {
         public Key Key { get; }
         public Modifiers Modifiers { get; }

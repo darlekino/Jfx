@@ -9,7 +9,7 @@ namespace Jfx.App.UI.Inputs
     /// <summary>
     /// Specifies the possible key values on a keyboard.
     /// </summary>
-    internal enum Key
+    public enum Key
     {
         None = 0,
         Cancel = 1,

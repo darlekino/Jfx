@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace Jfx.App.UI.Inputs
 {
-    internal class SizeEventArgs : EventArgs
+    public class SizeEventArgs : EventArgs
     {
         public int Height { get; }
         public int Width { get; }

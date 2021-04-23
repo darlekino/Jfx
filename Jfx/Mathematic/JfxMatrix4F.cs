@@ -94,6 +94,143 @@ namespace Jfx.Mathematic
             );
         }
 
+        public JfxMatrix4F TransformAround(in JfxVector3F transformationOrigin)
+        {
+            var translate = Translate(transformationOrigin);
+            return translate.Inverse() * this * translate;
+        }
+
+        public JfxMatrix4F Inverse()
+        {
+            float a = M11, b = M12, c = M13, d = M14;
+            float e = M21, f = M22, g = M23, h = M24;
+            float i = M31, j = M32, k = M33, l = M34;
+            float m = M41, n = M42, o = M43, p = M44;
+
+            float kp_lo = k * p - l * o;
+            float jp_ln = j * p - l * n;
+            float jo_kn = j * o - k * n;
+            float ip_lm = i * p - l * m;
+            float io_km = i * o - k * m;
+            float in_jm = i * n - j * m;
+
+            float a11 = +(f * kp_lo - g * jp_ln + h * jo_kn);
+            float a12 = -(e * kp_lo - g * ip_lm + h * io_km);
+            float a13 = +(e * jp_ln - f * ip_lm + h * in_jm);
+            float a14 = -(e * jo_kn - f * io_km + g * in_jm);
+
+            float det = a * a11 + b * a12 + c * a13 + d * a14;
+
+            if (Math.Abs(det) < float.Epsilon)
+            {
+                throw new InvalidOperationException("Determinant equal to zero!");
+            }
+
+            float invDet = 1.0f / det;
+
+            float gp_ho = g * p - h * o;
+            float fp_hn = f * p - h * n;
+            float fo_gn = f * o - g * n;
+            float ep_hm = e * p - h * m;
+            float eo_gm = e * o - g * m;
+            float en_fm = e * n - f * m;
+            float gl_hk = g * l - h * k;
+            float fl_hj = f * l - h * j;
+            float fk_gj = f * k - g * j;
+            float el_hi = e * l - h * i;
+            float ek_gi = e * k - g * i;
+            float ej_fi = e * j - f * i;
+
+            return new JfxMatrix4F(
+                m11: a11 * invDet,
+                m21: a12 * invDet,
+                m31: a13 * invDet,
+                m41: a14 * invDet,
+                m12: -(b * kp_lo - c * jp_ln + d * jo_kn) * invDet,
+                m22: +(a * kp_lo - c * ip_lm + d * io_km) * invDet,
+                m32: -(a * jp_ln - b * ip_lm + d * in_jm) * invDet,
+                m42: +(a * jo_kn - b * io_km + c * in_jm) * invDet,
+                m13: +(b * gp_ho - c * fp_hn + d * fo_gn) * invDet,
+                m23: -(a * gp_ho - c * ep_hm + d * eo_gm) * invDet,
+                m33: +(a * fp_hn - b * ep_hm + d * en_fm) * invDet,
+                m43: -(a * fo_gn - b * eo_gm + c * en_fm) * invDet,
+                m14: -(b * gl_hk - c * fl_hj + d * fk_gj) * invDet,
+                m24: +(a * gl_hk - c * el_hi + d * ek_gi) * invDet,
+                m34: -(a * fl_hj - b * el_hi + d * ej_fi) * invDet,
+                m44: +(a * fk_gj - b * ek_gi + c * ej_fi) * invDet
+            );
+        }
+
+        public bool TryInverse(out JfxMatrix4F result)
+        {
+            float a = M11, b = M12, c = M13, d = M14;
+            float e = M21, f = M22, g = M23, h = M24;
+            float i = M31, j = M32, k = M33, l = M34;
+            float m = M41, n = M42, o = M43, p = M44;
+
+            float kp_lo = k * p - l * o;
+            float jp_ln = j * p - l * n;
+            float jo_kn = j * o - k * n;
+            float ip_lm = i * p - l * m;
+            float io_km = i * o - k * m;
+            float in_jm = i * n - j * m;
+
+            float a11 = +(f * kp_lo - g * jp_ln + h * jo_kn);
+            float a12 = -(e * kp_lo - g * ip_lm + h * io_km);
+            float a13 = +(e * jp_ln - f * ip_lm + h * in_jm);
+            float a14 = -(e * jo_kn - f * io_km + g * in_jm);
+
+            float det = a * a11 + b * a12 + c * a13 + d * a14;
+
+            if (Math.Abs(det) < float.Epsilon)
+            {
+                result = new JfxMatrix4F(
+                    float.NaN, float.NaN, float.NaN, float.NaN,
+                    float.NaN, float.NaN, float.NaN, float.NaN,
+                    float.NaN, float.NaN, float.NaN, float.NaN,
+                    float.NaN, float.NaN, float.NaN, float.NaN
+                );
+
+                return false;
+            }
+
+            float invDet = 1.0f / det;
+
+            float gp_ho = g * p - h * o;
+            float fp_hn = f * p - h * n;
+            float fo_gn = f * o - g * n;
+            float ep_hm = e * p - h * m;
+            float eo_gm = e * o - g * m;
+            float en_fm = e * n - f * m;
+            float gl_hk = g * l - h * k;
+            float fl_hj = f * l - h * j;
+            float fk_gj = f * k - g * j;
+            float el_hi = e * l - h * i;
+            float ek_gi = e * k - g * i;
+            float ej_fi = e * j - f * i;
+
+            result = new JfxMatrix4F(
+                m11: a11 * invDet,
+                m21: a12 * invDet,
+                m31: a13 * invDet,
+                m41: a14 * invDet,
+                m12: -(b * kp_lo - c * jp_ln + d * jo_kn) * invDet,
+                m22: +(a * kp_lo - c * ip_lm + d * io_km) * invDet,
+                m32: -(a * jp_ln - b * ip_lm + d * in_jm) * invDet,
+                m42: +(a * jo_kn - b * io_km + c * in_jm) * invDet,
+                m13: +(b * gp_ho - c * fp_hn + d * fo_gn) * invDet,
+                m23: -(a * gp_ho - c * ep_hm + d * eo_gm) * invDet,
+                m33: +(a * fp_hn - b * ep_hm + d * en_fm) * invDet,
+                m43: -(a * fo_gn - b * eo_gm + c * en_fm) * invDet,
+                m14: -(b * gl_hk - c * fl_hj + d * fk_gj) * invDet,
+                m24: +(a * gl_hk - c * el_hi + d * ek_gi) * invDet,
+                m34: -(a * fl_hj - b * el_hi + d * ej_fi) * invDet,
+                m44: +(a * fk_gj - b * ek_gi + c * ej_fi) * invDet
+            );
+
+            return true;
+        }
+
         public static JfxMatrix4F Scale(float uniform)
             => Scale(uniform, uniform, uniform);
 
@@ -107,6 +244,8 @@ namespace Jfx.Mathematic
             );
         }
 
+        public static JfxMatrix4F Translate(JfxVector3F v) => Translate(v.X, v.Y, v.Z);
+
         public static JfxMatrix4F Translate(float dx, float dy, float dz)
         {
             return new JfxMatrix4F(
@@ -116,6 +255,8 @@ namespace Jfx.Mathematic
                 dx, dy, dz, 1
             );
         }
+
+        public static JfxMatrix4F Rotate(in JfxVector3F axis, float angle) => Rotate(axis.Normalize(), angle);
 
         public static JfxMatrix4F Rotate(in JfxUnitVector3F axis, float angle)
         {
@@ -143,12 +284,12 @@ namespace Jfx.Mathematic
                 1.0f
             );
         }
-        
+
         public static JfxMatrix4F LookAtRH(in JfxVector3F cameraPosition, in JfxVector3F cameraTarget, in JfxVector3F cameraUpVector)
         {
-            var zaxis = (cameraPosition - cameraTarget).Normilize();
-            var xaxis = cameraUpVector.CrossProduct(zaxis).Normilize();
-            var yaxis = zaxis.CrossProduct(xaxis);
+            var zaxis = (cameraPosition - cameraTarget).Normalize();
+            var xaxis = cameraUpVector.CrossProduct(zaxis).Normalize();
+            var yaxis = zaxis.CrossProduct(xaxis).Normalize();
 
             //var transformation = new JfxMatrix4F(
             //    xaxis.X, yaxis.X, zaxis.X, 0,
@@ -188,11 +329,11 @@ namespace Jfx.Mathematic
 
         public static JfxMatrix4F PerspectiveFieldOfViewRH(float fieldOfViewY, float aspectRatio, float znearPlane, float zfarPlane)
         {
-            float h = 1 / MathF.Tan(fieldOfViewY * 0.5f);
-            float w = h / aspectRatio;
+            float yScale = 1 / MathF.Tan(fieldOfViewY * 0.5f);
+            float xScale = yScale / aspectRatio;
             return new JfxMatrix4F(
-                w, 0, 0, 0,
-                0, h, 0, 0,
+                xScale, 0, 0, 0,
+                0, yScale, 0, 0,
                 0, 0, (znearPlane + zfarPlane) / (zfarPlane - znearPlane), -1,
                 0, 0, 2 * znearPlane * zfarPlane / (zfarPlane - znearPlane), 0
             );

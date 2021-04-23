@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jfx.Mathematic
 {
-    public readonly struct JfxVector3F
+    public readonly struct JfxVector3F: IEquatable<JfxVector3F> 
     {
         private static readonly JfxVector3F zero = new JfxVector3F(0, 0, 0);
         public static ref readonly JfxVector3F Zero => ref zero;
@@ -48,7 +48,7 @@ namespace Jfx.Mathematic
 
         public float Length() => MathF.Sqrt(X * X + Y * Y + Z * Z);
 
-        public JfxUnitVector3F Normilize() => JfxUnitVector3F.Normalize(this);
+        public JfxUnitVector3F Normalize() => JfxUnitVector3F.Normalize(this);
 
         public static JfxVector3F operator +(in JfxVector3F left, in JfxVector3F right)
         {
@@ -68,6 +68,24 @@ namespace Jfx.Mathematic
             );
         }
 
+        public static JfxVector3F operator +(in JfxVector3F left, in JfxUnitVector3F right)
+        {
+            return new JfxVector3F(
+                left.X + right.X,
+                left.Y + right.Y,
+                left.Z + right.Z
+            );
+        }
+
+        public static JfxVector3F operator -(in JfxVector3F left, in JfxUnitVector3F right)
+        {
+            return new JfxVector3F(
+                left.X - right.X,
+                left.Y - right.Y,
+                left.Z - right.Z
+            );
+        }
+
         public static JfxVector3F operator *(in JfxVector3F left, float right)
         {
             return new JfxVector3F(
@@ -76,6 +94,11 @@ namespace Jfx.Mathematic
                 left.Z * right
             );
         }
+
+        public static JfxVector3F operator *(float left, in JfxVector3F right) => right * left;
+
+        public static bool operator ==(in JfxVector3F left, in JfxVector3F right) => left.Equals(right);
+        public static bool operator !=(in JfxVector3F left, in JfxVector3F right) => !(left == right);
 
         public static JfxVector3F Transform(in JfxVector3F position, in JfxMatrix4F matrix)
         {
@@ -91,5 +114,13 @@ namespace Jfx.Mathematic
             );
         }
 
+        public bool Equals(JfxVector3F other) => X.Equals(other.X) && Y.Equals(other.Y) && Z.Equals(other.Z);
+
+        public override bool Equals(object obj) => (obj is JfxVector3F u && Equals(u));
+
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

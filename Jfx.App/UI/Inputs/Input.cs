@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace Jfx.App.UI.Inputs
 {
-    internal interface IInput : IDisposable
+    public interface IInput : IDisposable
     {
         int Height { get; }
         int Width { get; }
@@ -18,7 +18,7 @@ namespace Jfx.App.UI.Inputs
         event EventHandler<KeyEventArgs> KeyUp;
     }
 
-    internal class Input : IInput
+    public class Input : IInput
     {
         private readonly Control control;
 

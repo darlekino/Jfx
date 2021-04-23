@@ -1,93 +1,60 @@
-﻿using Jfx.App.UI.Inputs;
+﻿using Jfx.App.UI.Operations;
+using Jfx.App.UI.Inputs;
 using Jfx.Mathematic;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Jfx.App.UI
 {
-    internal abstract class Window : IWindow
+    public abstract class Window : IWindow
     {
-        private JfxSize bufferSize;
-        private JfxMatrix4F transformation;
+        protected JfxSize bufferSize;
+        protected readonly IntPtr HostHandle;
+        protected readonly Fps Fps = new Fps(TimeSpan.FromSeconds(1));
+        protected DateTime FrameStarted { get; private set; }
+        private IEnumerable<Operation> Operations { get; }
+        public IInput Input { get; set; }
+        public JfxPerspectiveCamera Camera { get; }
 
-        internal protected readonly IInput Input;
-        internal protected readonly IntPtr HostHandle;
-        internal protected readonly Fps Fps = new Fps(TimeSpan.FromSeconds(1));
-
-        internal protected DateTime FrameStarted { get; private set; }
-        internal protected ref readonly JfxSize BufferSize => ref bufferSize;
-        internal protected ref readonly JfxMatrix4F Transformation => ref transformation;
-        public JfxViewport Viewport { get; }
-        public JfxProjection Projection { get; }
-        public JfxCamera Camera { get; }
 
         public Window(IntPtr hostHandle, IInput input)
         {
-            var size = new JfxSize(input.Width, input.Height);
-
             Input = input;
             HostHandle = hostHandle;
-            bufferSize = size;
-            Viewport = new JfxViewport(0, 0, size, 0, 1);
+            bufferSize = new JfxSize(input.Width, input.Height);
 
-            var cameraPosition = new JfxVector3F(2, 2, 2);
-            var cameraTarget = new JfxVector3F(0, 0, 0);
-            var cameraUpVector = new JfxVector3F(0, 0, 1);
-            Camera = new JfxCamera(cameraPosition, cameraTarget, cameraUpVector);
-
-            var aspectRatio = Viewport.AspectRatio;
+            var viewport = new JfxViewport(0, 0, bufferSize, 0, 1);
             var nearPlane = 0.001f;
             var farPlane = 1000;
             var fieldOfViewY = MathF.PI * 0.5f;
-            Projection = new JfxPerspectiveProjection(nearPlane, farPlane, fieldOfViewY, aspectRatio);
-            //var filedHeight = 3f;
-            //Projection = new JfxOrthographicProjection(nearPlane, farPlane, filedHeight, aspectRatio);
+            var projection = new JfxPerspectiveProjection(fieldOfViewY, viewport.AspectRatio, nearPlane, farPlane);
+            Camera = new JfxPerspectiveCamera(
+                position: new JfxVector3F(1, 1, 1),
+                target: new JfxVector3F(0, 0, 0),
+                upVector: new JfxVector3F(0, 0, 1),
+                viewport: viewport,
+                projection: projection
+            );
 
-            UpdateTransformation();
-            Camera.Changed += OnTransformationChanged;
-            Input.SizeChanged += OnSizeChanged;
+            Operations = new List<Operation>
+            {
+                new Resize(this),
+                new CameraZoom(this, 0.15f),
+                new CameraPan(this),
+                new CameraOrbit(this)
+            };
         }
 
         public virtual void Dispose()
         {
-            Input.SizeChanged -= OnSizeChanged;
-            Camera.Changed -= OnTransformationChanged;
+            foreach (var o in Operations)
+                o.Dispose();
 
             Fps.Dispose();
             Input.Dispose();
         }
-
-        private void UpdateTransformation()
-        {
-            transformation = Camera.Transformation * Projection.Transformation * Viewport.Transformation;
-        }
-
-        private void OnTransformationChanged(object _, EventArgs __)
-        {
-            UpdateTransformation();
-        }
-
-        private void OnSizeChanged(object _, SizeEventArgs e)
-        {
-            static JfxSize Sanitize(int width, int height)
-            {
-                if (width < 1 || height < 1)
-                {
-                    return new JfxSize(1, 1);
-                }
-
-                return new JfxSize(width, height);
-            }
-
-            var size = Sanitize(e.Width, e.Height);
-            Viewport.Size = size;
-            Projection.AspectRatio = Viewport.AspectRatio;
-            ResizeSurface(size);
-            if (bufferSize != Viewport.Size)
-            {
-                bufferSize = Viewport.Size;
-                ResizeBuffers(bufferSize);
-            }
-        }
+        
 
         protected abstract void ResizeBuffers(in JfxSize size);
         protected abstract void ResizeSurface(in JfxSize size);
@@ -100,6 +67,16 @@ namespace Jfx.App.UI
             Fps.StartFrame();
             RenderInternal();
             Fps.EndFrame();
+        }
+
+        public void Resize(in JfxSize size)
+        {
+            ResizeSurface(size);
+            if (bufferSize != size)
+            {
+                bufferSize = size;
+                ResizeBuffers(bufferSize);
+            }
         }
     }
 }

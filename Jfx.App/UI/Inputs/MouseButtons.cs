@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Jfx.App.UI.Inputs
 {
     [Flags]
-    internal enum MouseButtons
+    public enum MouseButtons
     {
         None = 0b_0000_0000,
         Left = 0b_0000_0001,

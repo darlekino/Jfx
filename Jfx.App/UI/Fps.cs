@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Jfx.App.UI
 {
-    internal class Fps : IDisposable
+    public class Fps : IDisposable
     {
         private int frameCount;
         private TimeSpan elapsed;

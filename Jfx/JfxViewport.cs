@@ -3,28 +3,16 @@ using System;
 
 namespace Jfx
 {
-    public class JfxViewport
+    public readonly struct JfxViewport
     {
         public readonly int X;
         public readonly int Y;
         public readonly float MinZ;
         public readonly float MaxZ;
-        private JfxMatrix4F transformation;
-        private JfxSize size;
-
-        public float AspectRatio { get; private set; }
-        public JfxSize Size
-        {
-            get => size;
-            set
-            {
-                size = value;
-                Update();
-                Changed?.Invoke(this, EventArgs.Empty);
-            }
-        }
-        public ref readonly JfxMatrix4F Transformation => ref transformation;
-        public event EventHandler Changed;
+        public readonly JfxMatrix4F Matrix;
+        public readonly JfxMatrix4F MatrixInverse;
+        public readonly JfxSize Size;
+        public readonly float AspectRatio;
 
         public JfxViewport(int x, int y, in JfxSize size, float minZ, float maxZ)
         {
@@ -33,22 +21,22 @@ namespace Jfx
             MinZ = minZ;
             MaxZ = maxZ;
             Size = size;
-            Update();
-        }
-
-        private void Update()
-        {
-            AspectRatio = (float)size.Width / size.Height;
-
+            AspectRatio = (float)Size.Width / Size.Height;
             float halfOfWidth = 0.5f * size.Width;
             float halfOfHeight = 0.5f * size.Height;
 
-            transformation = new JfxMatrix4F(
+            Matrix = new JfxMatrix4F(
                 halfOfWidth, 0, 0, 0,
                 0, -halfOfHeight, 0, 0,
                 0, 0, MaxZ - MinZ, 0,
                 X + halfOfWidth, Y + halfOfHeight, MinZ, 1
             );
+
+            MatrixInverse = Matrix.Inverse();
+        }
+
+        public JfxViewport(in JfxViewport viewport, in JfxSize size) : this(viewport.X, viewport.Y, size, viewport.MinZ, viewport.MaxZ)
+        {
         }
     }
 }

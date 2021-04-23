@@ -25,12 +25,12 @@ namespace Jfx.App.Client
 
             while (!Dispatcher.HasShutdownStarted)
             {
-                DateTime utcNow = DateTime.UtcNow;
-                const int radius = 2;
-                float t = GetDeltaTime(utcNow, new TimeSpan(0, 0, 0, 10));
-                float angle = t * MathF.PI * 2;
+                //DateTime utcNow = DateTime.UtcNow;
+                //const int radius = 2;
+                //float t = GetDeltaTime(utcNow, new TimeSpan(0, 0, 0, 10));
+                //float angle = t * MathF.PI * 2;
 
-                window.Camera.MoveTo(new Mathematic.JfxVector3F(MathF.Sin(angle) * radius, MathF.Cos(angle) * radius, 1));
+                //window.Camera.MoveTo(new Mathematic.JfxVector3F(MathF.Sin(angle) * radius, MathF.Cos(angle) * radius, 1));
 
                 window.Render();
                 System.Windows.Forms.Application.DoEvents();

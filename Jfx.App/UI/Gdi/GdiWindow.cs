@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Jfx.App.UI.Gdi
 {
-    internal class GdiWindow : Window
+    public class GdiWindow : Window
     {
         enum Space
         {
@@ -76,10 +76,9 @@ namespace Jfx.App.UI.Gdi
         {
             graphicsHost = Graphics.FromHwnd(HostHandle);
             graphicsHostDeviceContext = graphicsHost.GetHdc();
+            CreateSurface(bufferSize);
+            CreateBuffers(bufferSize);
             consolas12 = new Font("Consolas", 12);
-
-            CreateSurface(Viewport.Size);
-            CreateBuffers(BufferSize);
         }
 
         public override void Dispose()
@@ -96,6 +95,7 @@ namespace Jfx.App.UI.Gdi
 
             base.Dispose();
         }
+
         private void CreateBuffers(in JfxSize size)
         {
             backBuffer = new DirectBitmap(size.Width, size.Height);
@@ -109,8 +109,7 @@ namespace Jfx.App.UI.Gdi
 
         private void DisposeBuffers()
         {
-            backBuffer.Dispose();
-            backBuffer = default;
+            backBuffer?.Dispose();
         }
 
         private void CreateSurface(in JfxSize size)
@@ -128,8 +127,7 @@ namespace Jfx.App.UI.Gdi
 
         private void DisposeSurface()
         {
-            bufferedGraphics.Dispose();
-            bufferedGraphics = default;
+            bufferedGraphics?.Dispose();
         }
 
         private float GetDeltaTime(TimeSpan periodDuration)
@@ -175,10 +173,10 @@ namespace Jfx.App.UI.Gdi
             switch (space)
             {
                 case Space.World:
-                    DrawPolylineScreenSpace(pen, Transform(Transformation, points));
+                    DrawPolylineScreenSpace(pen, Transform(Camera.TransformMatrix, points));
                     break;
                 case Space.View:
-                    DrawPolylineScreenSpace(pen, Transform(Viewport.Transformation, points));
+                    DrawPolylineScreenSpace(pen, Transform(Camera.Viewport.Matrix, points));
                     break;
                 case Space.Screen:
                     DrawPolylineScreenSpace(pen, points);
@@ -239,10 +237,10 @@ namespace Jfx.App.UI.Gdi
         private void DrawGeometry()
         {
             float angle = GetDeltaTime(new TimeSpan(0, 0, 0, 5)) * MathF.PI * 2;
-            var matrixModel =
+            var matrixModel = 
                 JfxMatrix4F.Scale(0.5f) *
                 JfxMatrix4F.Translate(1, 0, 0) *
-                JfxMatrix4F.Rotate(new JfxVector3F(1, 0, 0).Normilize(), angle);
+                JfxMatrix4F.Rotate(new JfxVector3F(1, 0, 0), angle);
 
             foreach (var cubePolyline in CubePolylines)
             {
@@ -254,7 +252,7 @@ namespace Jfx.App.UI.Gdi
             matrixModel =
                 JfxMatrix4F.Scale(0.5f) *
                 JfxMatrix4F.Translate(0, 1, 0) *
-                JfxMatrix4F.Rotate(new JfxVector3F(0, 1, 0).Normilize(), angle) *
+                JfxMatrix4F.Rotate(new JfxVector3F(0, 1, 0), angle) *
                 matrixModel;
 
             foreach (var cubePolyline in CubePolylines)
@@ -272,7 +270,12 @@ namespace Jfx.App.UI.Gdi
             DrawGeometry();
 
             // flush and swap buffers
-            bufferedGraphics.Graphics.DrawImage(backBuffer.Bitmap, new RectangleF(0, 0, Viewport.Size.Width, Viewport.Size.Height), new RectangleF(-0.5f, -0.5f, BufferSize.Width, BufferSize.Height), GraphicsUnit.Pixel);
+            bufferedGraphics.Graphics.DrawImage(
+                backBuffer.Bitmap, 
+                new RectangleF(0, 0, Camera.Viewport.Size.Width, Camera.Viewport.Size.Height), 
+                new RectangleF(-0.5f, -0.5f, bufferSize.Width, bufferSize.Height), 
+                GraphicsUnit.Pixel
+            );
 
             bufferedGraphics.Render(graphicsHostDeviceContext);
         }
