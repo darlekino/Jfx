@@ -12,6 +12,6 @@ namespace Jfx.App.UI
         public IInput Input { get; }
         JfxPerspectiveCamera Camera { get; }
         void Render();
-        void Resize(in JfxSize size);
+        void Resize(in Size size);
     }
 }

@@ -9,7 +9,7 @@ namespace Jfx.App.UI
 {
     public abstract class Window : IWindow
     {
-        protected JfxSize bufferSize;
+        protected Size bufferSize;
         protected readonly IntPtr HostHandle;
         protected readonly Fps Fps = new Fps(TimeSpan.FromSeconds(1));
         protected DateTime FrameStarted { get; private set; }
@@ -22,17 +22,17 @@ namespace Jfx.App.UI
         {
             Input = input;
             HostHandle = hostHandle;
-            bufferSize = new JfxSize(input.Width, input.Height);
+            bufferSize = new Size(input.Width, input.Height);
 
-            var viewport = new JfxViewport(0, 0, bufferSize, 0, 1);
+            var viewport = new Viewport(0, 0, bufferSize, 0, 1);
             var nearPlane = 0.001f;
             var farPlane = 1000;
             var fieldOfViewY = MathF.PI * 0.5f;
-            var projection = new JfxPerspectiveProjection(fieldOfViewY, viewport.AspectRatio, nearPlane, farPlane);
+            var projection = new PerspectiveProjection(fieldOfViewY, viewport.AspectRatio, nearPlane, farPlane);
             Camera = new JfxPerspectiveCamera(
-                position: new JfxVector3F(1, 1, 1),
-                target: new JfxVector3F(0, 0, 0),
-                upVector: new JfxVector3F(0, 0, 1),
+                position: new Vector3F(1, 1, 1),
+                target: new Vector3F(0, 0, 0),
+                upVector: new Vector3F(0, 0, 1),
                 viewport: viewport,
                 projection: projection
             );
@@ -56,8 +56,8 @@ namespace Jfx.App.UI
         }
         
 
-        protected abstract void ResizeBuffers(in JfxSize size);
-        protected abstract void ResizeSurface(in JfxSize size);
+        protected abstract void ResizeBuffers(in Size size);
+        protected abstract void ResizeSurface(in Size size);
 
         protected abstract void RenderInternal();
 
@@ -69,7 +69,7 @@ namespace Jfx.App.UI
             Fps.EndFrame();
         }
 
-        public void Resize(in JfxSize size)
+        public void Resize(in Size size)
         {
             ResizeSurface(size);
             if (bufferSize != size)

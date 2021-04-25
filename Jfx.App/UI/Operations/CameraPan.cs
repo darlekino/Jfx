@@ -9,8 +9,8 @@ namespace Jfx.App.UI.Operations
         private struct MouseDownInfo
         {
             public JfxPerspectiveCamera Camera;
-            public JfxPlane Plane;
-            public JfxVector3F PointOfIntersection;
+            public Plane Plane;
+            public Vector3F PointOfIntersection;
         }
 
         private bool moving = default;
@@ -30,11 +30,11 @@ namespace Jfx.App.UI.Operations
             Window.Input.MouseDown -= OnMouseDown;
         }
 
-        private JfxRay GetMouseRay(int x, int y)
+        private Ray GetMouseRay(int x, int y)
         {
-            var mousePositionInScreen = new JfxVector3F(x, y, 0);
-            var mousePositionInWorld = JfxVector3F.Transform(mousePositionInScreen, mouseDown.Camera.TransformMatrixInverse);
-            return new JfxRay(mousePositionInWorld, (mousePositionInWorld - mouseDown.Camera.Position).Normalize());
+            var mousePositionInScreen = new Vector3F(x, y, 0);
+            var mousePositionInWorld = Vector3F.Transform(mousePositionInScreen, mouseDown.Camera.TransformMatrixInverse);
+            return new Ray(mousePositionInWorld, (mousePositionInWorld - mouseDown.Camera.Position).Normalize());
         }
 
         private void OnMouseDown(object sender, MouseEventArgs e)
@@ -43,7 +43,7 @@ namespace Jfx.App.UI.Operations
                 return;
 
             mouseDown.Camera = Window.Camera.Clone();
-            mouseDown.Plane = new JfxPlane(Window.Camera.Target, Window.Camera.NormilizedEyeVector());
+            mouseDown.Plane = new Plane(Window.Camera.Target, Window.Camera.NormilizedEyeVector());
             mouseDown.PointOfIntersection = mouseDown.Plane.IntersectionWith(GetMouseRay(e.X, e.Y));
             moving = true;
         }

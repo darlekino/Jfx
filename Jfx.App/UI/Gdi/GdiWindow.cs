@@ -96,12 +96,12 @@ namespace Jfx.App.UI.Gdi
             base.Dispose();
         }
 
-        private void CreateBuffers(in JfxSize size)
+        private void CreateBuffers(in Size size)
         {
             backBuffer = new DirectBitmap(size.Width, size.Height);
         }
 
-        protected override void ResizeBuffers(in JfxSize size)
+        protected override void ResizeBuffers(in Size size)
         {
             DisposeBuffers();
             CreateBuffers(size);
@@ -112,14 +112,14 @@ namespace Jfx.App.UI.Gdi
             backBuffer?.Dispose();
         }
 
-        private void CreateSurface(in JfxSize size)
+        private void CreateSurface(in Size size)
         {
             var rectangle = new Rectangle(0, 0, size.Width, size.Height);
             bufferedGraphics = BufferedGraphicsManager.Current.Allocate(graphicsHostDeviceContext, rectangle);
             bufferedGraphics.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
         }
 
-        protected override void ResizeSurface(in JfxSize size)
+        protected override void ResizeSurface(in Size size)
         {
             DisposeSurface();
             CreateSurface(size);
@@ -141,9 +141,9 @@ namespace Jfx.App.UI.Gdi
             return (float)result;
         }
 
-        private static IReadOnlyList<IReadOnlyList<JfxVector3F>> Transform(in JfxMatrix4F transformation, IReadOnlyList<IReadOnlyList<JfxVector3F>> points)
+        private static IReadOnlyList<IReadOnlyList<Vector3F>> Transform(in Matrix4F transformation, IReadOnlyList<IReadOnlyList<Vector3F>> points)
         {
-            var list = new List<IReadOnlyList<JfxVector3F>>(points.Count);
+            var list = new List<IReadOnlyList<Vector3F>>(points.Count);
             for (int i = 0; i < points.Count; i++)
             {
                 list.Add(Transform(transformation, points[i]));
@@ -152,23 +152,23 @@ namespace Jfx.App.UI.Gdi
             return list;
         }
 
-        private static IReadOnlyList<JfxVector3F> Transform(in JfxMatrix4F transformation, IReadOnlyList<JfxVector3F> points)
+        private static IReadOnlyList<Vector3F> Transform(in Matrix4F transformation, IReadOnlyList<Vector3F> points)
         {
-            var list = new List<JfxVector3F>(points.Count);
+            var list = new List<Vector3F>(points.Count);
             for (int i = 0; i < points.Count; i++)
             {
-                list.Add(JfxVector3F.Transform(points[i], transformation));
+                list.Add(Vector3F.Transform(points[i], transformation));
             }
 
             return list;
         }
 
-        private void DrawPolyline(Pen pen, Space space, params JfxVector3F[] points)
+        private void DrawPolyline(Pen pen, Space space, params Vector3F[] points)
         {
             DrawPolyline(pen, space, points.ToList());
         }
 
-        private void DrawPolyline(Pen pen, Space space, IReadOnlyList<JfxVector3F> points)
+        private void DrawPolyline(Pen pen, Space space, IReadOnlyList<Vector3F> points)
         {
             switch (space)
             {
@@ -186,7 +186,7 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        private void DrawPolylineScreenSpace(Pen pen, IReadOnlyList<JfxVector3F> points)
+        private void DrawPolylineScreenSpace(Pen pen, IReadOnlyList<Vector3F> points)
         {
             for (int i = 0; i < points.Count - 1; i++)
             {
@@ -198,49 +198,49 @@ namespace Jfx.App.UI.Gdi
 
         private void DrawAxis()
         {
-            DrawPolyline(Pens.Red, Space.World, new JfxVector3F(0, 0, 0), new JfxVector3F(1, 0, 0));
-            DrawPolyline(Pens.LawnGreen, Space.World, new JfxVector3F(0, 0, 0), new JfxVector3F(0, 1, 0));
-            DrawPolyline(Pens.Blue, Space.World, new JfxVector3F(0, 0, 0), new JfxVector3F(0, 0, 1));
+            DrawPolyline(Pens.Red, Space.World, new Vector3F(0, 0, 0), new Vector3F(1, 0, 0));
+            DrawPolyline(Pens.LawnGreen, Space.World, new Vector3F(0, 0, 0), new Vector3F(0, 1, 0));
+            DrawPolyline(Pens.Blue, Space.World, new Vector3F(0, 0, 0), new Vector3F(0, 0, 1));
         }
 
 
-        private static readonly IReadOnlyList<IReadOnlyList<JfxVector3F>> CubePolylines;
+        private static readonly IReadOnlyList<IReadOnlyList<Vector3F>> CubePolylines;
         static GdiWindow()
         {
             var points = new[]
             {
                 new[]
                 {
-                    new JfxVector3F(0, 0, 0),
-                    new JfxVector3F(1, 0, 0),
-                    new JfxVector3F(1, 1, 0),
-                    new JfxVector3F(0, 1, 0),
-                    new JfxVector3F(0, 0, 0),
+                    new Vector3F(0, 0, 0),
+                    new Vector3F(1, 0, 0),
+                    new Vector3F(1, 1, 0),
+                    new Vector3F(0, 1, 0),
+                    new Vector3F(0, 0, 0),
                 },
                 new[]
                 {
-                    new JfxVector3F(0, 0, 1),
-                    new JfxVector3F(1, 0, 1),
-                    new JfxVector3F(1, 1, 1),
-                    new JfxVector3F(0, 1, 1),
-                    new JfxVector3F(0, 0, 1),
+                    new Vector3F(0, 0, 1),
+                    new Vector3F(1, 0, 1),
+                    new Vector3F(1, 1, 1),
+                    new Vector3F(0, 1, 1),
+                    new Vector3F(0, 0, 1),
                 },
-                new[] { new JfxVector3F(0, 0, 0), new JfxVector3F(0, 0, 1), },
-                new[] { new JfxVector3F(1, 0, 0), new JfxVector3F(1, 0, 1), },
-                new[] { new JfxVector3F(1, 1, 0), new JfxVector3F(1, 1, 1), },
-                new[] { new JfxVector3F(0, 1, 0), new JfxVector3F(0, 1, 1), },
+                new[] { new Vector3F(0, 0, 0), new Vector3F(0, 0, 1), },
+                new[] { new Vector3F(1, 0, 0), new Vector3F(1, 0, 1), },
+                new[] { new Vector3F(1, 1, 0), new Vector3F(1, 1, 1), },
+                new[] { new Vector3F(0, 1, 0), new Vector3F(0, 1, 1), },
             };
 
-            CubePolylines = Transform(JfxMatrix4F.Translate(-0.5f, -0.5f, -0.5f), points);
+            CubePolylines = Transform(Matrix4F.Translate(-0.5f, -0.5f, -0.5f), points);
         }
 
         private void DrawGeometry()
         {
             float angle = GetDeltaTime(new TimeSpan(0, 0, 0, 5)) * MathF.PI * 2;
             var matrixModel = 
-                JfxMatrix4F.Scale(0.5f) *
-                JfxMatrix4F.Translate(1, 0, 0) *
-                JfxMatrix4F.Rotate(new JfxVector3F(1, 0, 0), angle);
+                Matrix4F.Scale(0.5f) *
+                Matrix4F.Translate(1, 0, 0) *
+                Matrix4F.Rotate(new Vector3F(1, 0, 0), angle);
 
             foreach (var cubePolyline in CubePolylines)
             {
@@ -250,9 +250,9 @@ namespace Jfx.App.UI.Gdi
             //smaller cube
             angle = GetDeltaTime(new TimeSpan(0, 0, 0, 1)) * MathF.PI * 2;
             matrixModel =
-                JfxMatrix4F.Scale(0.5f) *
-                JfxMatrix4F.Translate(0, 1, 0) *
-                JfxMatrix4F.Rotate(new JfxVector3F(0, 1, 0), angle) *
+                Matrix4F.Scale(0.5f) *
+                Matrix4F.Translate(0, 1, 0) *
+                Matrix4F.Rotate(new Vector3F(0, 1, 0), angle) *
                 matrixModel;
 
             foreach (var cubePolyline in CubePolylines)

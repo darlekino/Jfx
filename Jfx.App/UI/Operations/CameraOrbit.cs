@@ -13,32 +13,32 @@ namespace Jfx.App.UI.Operations
         private struct MouseDownInfo
         {
             public JfxPerspectiveCamera Camera;
-            public JfxVector3F MousePositionInView;
-            public JfxMatrix4F LocalTransformation;
-            public JfxMatrix4F LocalTransformationInverse;
-            public JfxVector3F EyeInLocal;
-            public JfxUnitVector3F EyeDirectionInLocal;
-            public JfxVector3F CameraTargetInLocal;
+            public Vector3F MousePositionInView;
+            public Matrix4F LocalTransformation;
+            public Matrix4F LocalTransformationInverse;
+            public Vector3F EyeInLocal;
+            public UnitVector3F EyeDirectionInLocal;
+            public Vector3F CameraTargetInLocal;
 
             public MouseDownInfo(JfxPerspectiveCamera camera, MouseEventArgs e)
             {
                 Camera = camera.Clone();
-                MousePositionInView = JfxVector3F.Transform(new JfxVector3F(e.X, e.Y, 0), Camera.Viewport.MatrixInverse);
+                MousePositionInView = Vector3F.Transform(new Vector3F(e.X, e.Y, 0), Camera.Viewport.MatrixInverse);
                 var zAxis = Camera.UpVector;
-                var yzPlane = JfxPlane.FromPoints(JfxVector3F.Zero, Camera.EyeVector(), zAxis);
+                var yzPlane = Plane.FromPoints(Vector3F.Zero, Camera.NormilizedEyeVector().ToVector(), zAxis);
                 var xAxis = yzPlane.Normal;
-                var xzPlane = JfxPlane.FromPoints(JfxVector3F.Zero, zAxis, xAxis.ToVector());
+                var xzPlane = Plane.FromPoints(Vector3F.Zero, zAxis, xAxis.ToVector());
                 var yAxis = xzPlane.Normal;
 
-                LocalTransformation = new JfxMatrix4F(
+                LocalTransformation = new Matrix4F(
                     xAxis.X, yAxis.X, zAxis.X, 0,
                     xAxis.Y, yAxis.Y, zAxis.Y, 0,
                     xAxis.Z, yAxis.Z, zAxis.Z, 0,
                     0, 0, 0, 1);
 
                 LocalTransformationInverse = LocalTransformation.Inverse();
-                EyeInLocal = JfxVector3F.Transform(Camera.EyeVector(), LocalTransformation);
-                CameraTargetInLocal = JfxVector3F.Transform(Camera.Target, LocalTransformation);
+                EyeInLocal = Vector3F.Transform(Camera.Position, LocalTransformation);
+                CameraTargetInLocal = Vector3F.Transform(Camera.Target, LocalTransformation);
                 EyeDirectionInLocal = (CameraTargetInLocal - EyeInLocal).Normalize(); // ???
             }
         }
@@ -81,22 +81,22 @@ namespace Jfx.App.UI.Operations
         {
             if (moving)
             {
-                var mouseMoveInView = JfxVector3F.Transform(new JfxVector3F(e.X, e.Y, 0), Window.Camera.Viewport.MatrixInverse);
-                (float thetaDelta, float phiDelta) = SphereAngles(mouseMoveInView, mouseDown.EyeDirectionInLocal);
+                var mouseMoveInView = Vector3F.Transform(new Vector3F(e.X, e.Y, 0), Window.Camera.Viewport.MatrixInverse);
+                (float thetaDelta, float phiDelta) = SphereAngles(mouseMoveInView - mouseDown.MousePositionInView, mouseDown.EyeDirectionInLocal);
 
                 // rotate horizontally
-                var rotationHorizontal = JfxMatrix4F.Rotate(JfxUnitVector3F.ZAxis, thetaDelta).TransformAround(mouseDown.CameraTargetInLocal);
-                var eye = JfxVector3F.Transform(mouseDown.EyeInLocal, rotationHorizontal);
-                var target = JfxVector3F.Transform(mouseDown.CameraTargetInLocal, rotationHorizontal);
+                var rotationHorizontal = Matrix4F.Rotate(UnitVector3F.ZAxis, thetaDelta).TransformAround(mouseDown.CameraTargetInLocal);
+                var eye = Vector3F.Transform(mouseDown.EyeInLocal, rotationHorizontal);
+                var target = Vector3F.Transform(mouseDown.CameraTargetInLocal, rotationHorizontal);
 
                 // rotate vertically
-                var phiPlane = JfxPlane.FromPoints(eye, target, target + JfxUnitVector3F.ZAxis);
-                var rotationVertical = JfxMatrix4F.Rotate(phiPlane.Normal, phiDelta).TransformAround(mouseDown.CameraTargetInLocal);
-                eye = JfxVector3F.Transform(mouseDown.EyeInLocal, rotationVertical);
-                target = JfxVector3F.Transform(mouseDown.CameraTargetInLocal, rotationVertical);
+                var phiPlane = Plane.FromPoints(eye, target, target + UnitVector3F.ZAxis);
+                var rotationVertical = Matrix4F.Rotate(phiPlane.Normal, phiDelta).TransformAround(mouseDown.CameraTargetInLocal);
+                eye = Vector3F.Transform(eye, rotationVertical);
+                target = Vector3F.Transform(target, rotationVertical);
 
-                var eyeInWorld = JfxVector3F.Transform(eye, mouseDown.LocalTransformationInverse);
-                var targerInWorld = JfxVector3F.Transform(target, mouseDown.LocalTransformationInverse);
+                eye = Vector3F.Transform(eye, mouseDown.LocalTransformationInverse);
+                target = Vector3F.Transform(target, mouseDown.LocalTransformationInverse);
 
                 Window.Camera.MoveTo(eye);
                 Window.Camera.LookAt(target);
@@ -104,13 +104,13 @@ namespace Jfx.App.UI.Operations
             }
         }
 
-        private static (float, float) SphereAngles(JfxVector3F mouseOffsetView, JfxUnitVector3F eyeDirection)
+        private static (float, float) SphereAngles(Vector3F mouseOffsetView, UnitVector3F eyeDirection)
         {
             // get deltas
             float thetaDelta = -mouseOffsetView.X * MathF.PI;  // horizontal (around z-axis)
             float phiDelta = mouseOffsetView.Y * MathF.PI;   // vertical
 
-            var phiStart = JfxUnitVector3F.ZAxis.AngleTo(-eyeDirection);
+            var phiStart = UnitVector3F.ZAxis.AngleTo(-eyeDirection);
             var phiEnd = phiStart + phiDelta;
 
             // clamp phi so that new view vector won't match with upVector

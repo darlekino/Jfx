@@ -19,16 +19,16 @@ namespace Jfx.App.UI.Operations
             Window.Input.SizeChanged -= OnSizeChanged;
         }
 
-        private void OnSizeChanged(object _, SizeEventArgs e)
+        private void OnSizeChanged(object _, Inputs.SizeEventArgs e)
         {
-            static JfxSize Sanitize(int width, int height)
+            static Size Sanitize(int width, int height)
             {
                 if (width < 1 || height < 1)
                 {
-                    return new JfxSize(1, 1);
+                    return new Size(1, 1);
                 }
 
-                return new JfxSize(width, height);
+                return new Size(width, height);
             }
 
             var size = Sanitize(e.Width, e.Height);

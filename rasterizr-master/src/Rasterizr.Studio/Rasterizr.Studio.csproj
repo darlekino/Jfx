@@ -1,0 +1,522 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{32896243-BB1D-4A46-B2CC-D50E69A0FF3C}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rasterizr.Studio</RootNamespace>
+    <AssemblyName>Rasterizr.Studio</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Caliburn.Micro, Version=1.5.2.0, Culture=neutral, PublicKeyToken=8e5891231f2ed21f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Caliburn.Micro.1.5.2\lib\net40\Caliburn.Micro.dll</HintPath>
+    </Reference>
+    <Reference Include="Gemini, Version=0.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\GeminiWpf.0.4.0\lib\net40\Gemini.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro">
+      <HintPath>..\packages\MahApps.Metro.0.10.1.1\lib\net40\MahApps.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Roslyn.Compilers">
+      <HintPath>..\packages\Roslyn.Compilers.Common.1.2.20906.2\lib\net45\Roslyn.Compilers.dll</HintPath>
+    </Reference>
+    <Reference Include="Roslyn.Compilers.CSharp">
+      <HintPath>..\packages\Roslyn.Compilers.CSharp.1.2.20906.2\lib\net45\Roslyn.Compilers.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX, Version=2.5.0.0, Culture=neutral, PublicKeyToken=627a3d6d1956f55a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SharpDX.2.5.0\lib\net40\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>..\packages\SharpDX.D3DCompiler.2.5.0\lib\net40\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SlimShader, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\SlimShader.dll</HintPath>
+    </Reference>
+    <Reference Include="SlimShader.Compiler">
+      <HintPath>..\..\lib\SlimShader.Compiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SlimShader.VirtualMachine, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\lib\SlimShader.VirtualMachine.dll</HintPath>
+    </Reference>
+    <Reference Include="SlimShader.VirtualMachine.Jitter">
+      <HintPath>..\..\lib\SlimShader.VirtualMachine.Jitter.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.0.10.1.1\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.0.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="Framework\Controls\DebugImage.cs" />
+    <Compile Include="Framework\Controls\NearestNeighborImage.cs" />
+    <Compile Include="Framework\Controls\WriteableBitmapImage.cs" />
+    <Compile Include="Framework\Controls\ZoomBorder.cs" />
+    <Compile Include="Framework\Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Framework\Int32Point.cs" />
+    <Compile Include="Modules\GraphicsDebugging\Design\DesignTimeSelectionService.cs" />
+    <Compile Include="Modules\GraphicsDebugging\Design\DesignTimeTracefile.cs" />
+    <Compile Include="Modules\GraphicsDebugging\ISelectionService.cs" />
+    <Compile Include="Modules\GraphicsDebugging\Module.cs" />
+    <Compile Include="Modules\GraphicsDebugging\PixelChangedEventArgs.cs" />
+    <Compile Include="Modules\GraphicsDebugging\SelectionService.cs" />
+    <Compile Include="Modules\GraphicsDebugging\TracefileEventChangedEventArgs.cs" />
+    <Compile Include="Modules\GraphicsDebugging\TracefileFrameChangedEventArgs.cs" />
+    <Compile Include="Modules\GraphicsDebugging\ViewModels\TracefileEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsDebugging\ViewModels\TracefileFrameViewModel.cs" />
+    <Compile Include="Modules\GraphicsDebugging\ViewModels\TracefileViewModel.cs" />
+    <Compile Include="Modules\GraphicsDebugging\Views\TracefileEventView.xaml.cs">
+      <DependentUpon>TracefileEventView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsEventList\Design\DesignTimeGraphicsEventListViewModel.cs" />
+    <Compile Include="Modules\GraphicsEventList\Module.cs" />
+    <Compile Include="Modules\GraphicsEventList\ViewModels\GraphicsEventListViewModel.cs" />
+    <Compile Include="Modules\GraphicsEventList\Views\GraphicsEventListView.xaml.cs">
+      <DependentUpon>GraphicsEventListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\BlendStateViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\BufferViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\GraphicsObjectDocumentViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\GraphicsObjectTableViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\GraphicsObjectViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\InputLayoutViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\ShaderViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\ViewModels\Texture2DViewModel.cs" />
+    <Compile Include="Modules\GraphicsObjectTable\Views\BlendStateView.xaml.cs">
+      <DependentUpon>BlendStateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\BufferView.xaml.cs">
+      <DependentUpon>BufferView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\GraphicsObjectDocumentView.xaml.cs">
+      <DependentUpon>GraphicsObjectDocumentView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\GraphicsObjectTableView.xaml.cs">
+      <DependentUpon>GraphicsObjectTableView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\InputLayoutView.xaml.cs">
+      <DependentUpon>InputLayoutView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\ShaderView.xaml.cs">
+      <DependentUpon>ShaderView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsObjectTable\Views\Texture2DView.xaml.cs">
+      <DependentUpon>Texture2DView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPipelineStages\ViewModels\GraphicsPipelineStagesViewModel.cs" />
+    <Compile Include="Modules\GraphicsPipelineStages\Views\GraphicsPipelineStagesView.xaml.cs">
+      <DependentUpon>GraphicsPipelineStagesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Controls\ItemToCollectionConverter.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Controls\NullToVisibilityConverter.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Controls\PixelHistoryEventTemplateSelector.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeColorResultViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeColorViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeDrawPixelHistoryEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeGraphicsPixelHistoryViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeOutputMergerDrawPixelHistoryEventPartViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Design\DesignTimeSimplePixelHistoryEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\PixelResults\ColorResultViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\ColorViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\DrawPixelHistoryEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\DrawPixelHistoryEventPartViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\PixelResults\PixelResultViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\PixelResults\ExcludedPixelResultViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\GraphicsPixelHistoryViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\OutputMergerDrawPixelHistoryEventPartViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\PixelHistoryEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\PixelHistoryEventViewModelBase.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\SimplePixelHistoryEventViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\ViewModels\VertexShaderDrawPixelHistoryEventPartViewModel.cs" />
+    <Compile Include="Modules\GraphicsPixelHistory\Views\PixelResults\ColorResultView.xaml.cs">
+      <DependentUpon>ColorResultView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\ColorView.xaml.cs">
+      <DependentUpon>ColorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\PixelResults\ExcludedPixelResultView.xaml.cs">
+      <DependentUpon>ExcludedPixelResultView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\GraphicsPixelHistoryView.xaml.cs">
+      <DependentUpon>GraphicsPixelHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\InputAssemblerDrawPixelHistoryEventPartView.xaml.cs">
+      <DependentUpon>InputAssemblerDrawPixelHistoryEventPartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\OutputMergerDrawPixelHistoryEventPartView.xaml.cs">
+      <DependentUpon>OutputMergerDrawPixelHistoryEventPartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\SimplePixelHistoryEventView.xaml.cs">
+      <DependentUpon>SimplePixelHistoryEventView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\GraphicsPixelHistory\Views\VertexShaderDrawPixelHistoryEventPartView.xaml.cs">
+      <DependentUpon>VertexShaderDrawPixelHistoryEventPartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\SampleBrowser\ISample.cs" />
+    <Compile Include="Modules\SampleBrowser\Module.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\BasicTriangle\BasicTriangleSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\BasicWindow\BasicWindowSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\EnvironmentMapping\EnvironmentMappingSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\SampleClock.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\FpsCounter.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\ISampleMetadata.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\MiniCubeTexture\MiniCubeTextureSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\MiniCube\MiniCubeSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\ModelLoading\ModelLoadingSample.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\SampleBase.cs" />
+    <Compile Include="Modules\SampleBrowser\Samples\SampleView.xaml.cs">
+      <DependentUpon>SampleView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\SampleBrowser\Samples\SampleViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\Views\SampleBrowserView.xaml.cs">
+      <DependentUpon>SampleBrowserView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\SampleBrowser\ViewModels\SampleBrowserViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\TechDemos\ITechDemoMetadata.cs" />
+    <Compile Include="Modules\SampleBrowser\TechDemos\Resources\TextureMipmapping\MipMapViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\TechDemos\Resources\TextureMipmapping\TextureMipmappingView.xaml.cs">
+      <DependentUpon>TextureMipmappingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\SampleBrowser\TechDemos\Resources\TextureMipmapping\TextureMipmappingViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\TechDemos\Resources\TextureSampling\TextureSamplingView.xaml.cs">
+      <DependentUpon>TextureSamplingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Modules\SampleBrowser\TechDemos\Resources\TextureSampling\TextureSamplingViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\TechDemos\TechDemoViewModel.cs" />
+    <Compile Include="Modules\SampleBrowser\ViewModels\SampleCategoryViewModel.cs" />
+    <Compile Include="Modules\Startup\Module.cs" />
+    <Compile Include="Modules\TracefileViewer\Design\DesignTimeTracefileViewerViewModel.cs" />
+    <Compile Include="Modules\TracefileViewer\EditorProvider.cs" />
+    <Compile Include="Modules\TracefileViewer\ViewModels\TracefileViewerViewModel.cs" />
+    <Compile Include="Modules\TracefileViewer\Views\TracefileViewerView.xaml.cs">
+      <DependentUpon>TracefileViewerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Content Include="Modules\SampleBrowser\Samples\EnvironmentMapping\EnvironmentMapping.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\EnvironmentMapping\white.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Car\body.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Car\turret.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Car\wheel.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\TechDemos\Resources\TextureMipmapping\window_28.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Modules\SampleBrowser\TechDemos\Resources\TextureSampling\CorrodedTiles.png" />
+    <Resource Include="Modules\GraphicsPixelHistory\Resources\FailedZTestLarge.png" />
+    <Resource Include="Modules\GraphicsPixelHistory\Resources\FailedZTestSmall.png" />
+    <Content Include="Modules\SampleBrowser\Samples\BasicTriangle\MiniTri.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Modules\SampleBrowser\Samples\MiniCubeTexture\GeneticaMortarlessBlocks.jpg" />
+    <Content Include="Modules\SampleBrowser\Samples\MiniCubeTexture\MiniCubeTexture.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\MiniCube\MiniCube.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\ModelLoading.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\00_skap.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\01_stub.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\01_St_kp.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\01_S_ba.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\01_S_kap.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\kamen-stup.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\kamen.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\prozor1.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\reljef.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\sky.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\sp_luk.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\vrata_ko.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\vrata_kr.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\x01_st.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\TechDemos\Resources\TextureSampling\Texture.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Content Include="Examples\BasicTriangle.rlog">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Sponza\sponza.3ds">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="app.config" />
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Car\car.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\ModelLoading\Car\car.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\EnvironmentMapping\teapot.mtl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\SampleBrowser\Samples\EnvironmentMapping\teapot.obj">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="Modules\GraphicsDebugging\Views\TracefileEventView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsEventList\Views\GraphicsEventListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\BlendStateView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\BufferView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\GraphicsObjectDocumentView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\GraphicsObjectTableView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\InputLayoutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\ShaderView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsObjectTable\Views\Texture2DView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPipelineStages\Views\GraphicsPipelineStagesView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\PixelResults\ColorResultView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\ColorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\PixelResults\ExcludedPixelResultView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\GraphicsPixelHistoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\InputAssemblerDrawPixelHistoryEventPartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\OutputMergerDrawPixelHistoryEventPartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\PixelHistoryResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\SimplePixelHistoryEventView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\GraphicsPixelHistory\Views\VertexShaderDrawPixelHistoryEventPartView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Modules\SampleBrowser\Samples\SampleView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SampleBrowser\Views\SampleBrowserView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SampleBrowser\TechDemos\Resources\TextureMipmapping\TextureMipmappingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SampleBrowser\TechDemos\Resources\TextureSampling\TextureSamplingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\TracefileViewer\Views\TracefileViewerView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Rasterizr.Diagnostics.Logging\Rasterizr.Diagnostics.Logging.csproj">
+      <Project>{0e6a7ff0-fac4-4696-bb1c-2b50067a364f}</Project>
+      <Name>Rasterizr.Diagnostics.Logging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rasterizr.Platform.Wpf\Rasterizr.Platform.Wpf.csproj">
+      <Project>{4633E75B-1C03-4588-BD29-8BE9A111AD1A}</Project>
+      <Name>Rasterizr.Platform.Wpf</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rasterizr.Toolkit\Rasterizr.Toolkit.csproj">
+      <Project>{C7886048-659E-44CA-8921-2416CCE3A795}</Project>
+      <Name>Rasterizr.Toolkit</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rasterizr\Rasterizr.csproj">
+      <Project>{74618e00-5eab-4d4f-9488-3a0f76058f71}</Project>
+      <Name>Rasterizr</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
