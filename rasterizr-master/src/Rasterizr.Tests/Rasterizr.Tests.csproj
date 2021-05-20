@@ -83,6 +83,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rasterizr.Diagnostics.Logging\Rasterizr.Diagnostics.Logging.csproj">
+      <Project>{0e6a7ff0-fac4-4696-bb1c-2b50067a364f}</Project>
+      <Name>Rasterizr.Diagnostics.Logging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rasterizr.Platform.Wpf\Rasterizr.Platform.Wpf.csproj">
       <Project>{4633E75B-1C03-4588-BD29-8BE9A111AD1A}</Project>
       <Name>Rasterizr.Platform.Wpf</Name>
@@ -90,6 +94,10 @@
     <ProjectReference Include="..\Rasterizr.Toolkit\Rasterizr.Toolkit.csproj">
       <Project>{c7886048-659e-44ca-8921-2416cce3a795}</Project>
       <Name>Rasterizr.Toolkit</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rasterizr\Rasterizr.csproj">
+      <Project>{74618e00-5eab-4d4f-9488-3a0f76058f71}</Project>
+      <Name>Rasterizr</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

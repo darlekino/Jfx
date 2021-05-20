@@ -5,30 +5,18 @@ namespace Rasterizr.Util
 {
 	internal static class Interop
 	{
-        //public static unsafe void Read<T>(byte* pSrc, T[] data, int offset, int countInBytes)
-        //    where T : struct
-        //{
-        //    var sizeOfT = SizeOf<T>();
-        //    for (int i = 0; i < countInBytes / sizeOfT; i++)
-        //    {
-        //        data[offset + i] = (T)Marshal.PtrToStructure((IntPtr)pSrc, typeof(T));
-        //        pSrc += sizeOfT;
-        //    }
-        //}
-
         [DllImport("kernel32.dll")]
         static extern void CopyMemory(IntPtr destination, IntPtr source, uint length);
 
         public static unsafe void Read<T>(byte* pSrc, T[] data, int offset, int countInBytes)
             where T : struct
         {
-            var sizeOfT = SizeOf<T>();
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
             try
             {
-                var pDst = handle.AddrOfPinnedObject() + (offset * sizeOfT);
-                CopyMemory(pDst, (IntPtr)pSrc, (uint)countInBytes);
+                var pDest = handle.AddrOfPinnedObject() + (offset * SizeOf<T>());
+                CopyMemory(pDest, (IntPtr)pSrc, (uint)countInBytes);
             }
             finally
             {
@@ -46,15 +34,22 @@ namespace Rasterizr.Util
 			Marshal.StructureToPtr(data, (IntPtr)pDest, false);
 		}
 
-		public static unsafe void Write<T>(byte* pDest, T[] data, int offset, int count)
-			where T : struct
-		{
-			var sizeOfT = SizeOf<T>();
-			for (int i = 0; i < count; i++)
+        public static unsafe void Write<T>(byte* pDest, T[] data, int offset, int count)
+            where T : struct
+        {
+            var sizeOfT = SizeOf<T>();
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try
             {
-				Marshal.StructureToPtr(data[offset + i], (IntPtr)pDest, false);
-				pDest += sizeOfT;
-			}
-		}
+                var pSrc = handle.AddrOfPinnedObject() + (offset * sizeOfT);
+                var countInBytes = count * sizeOfT;
+                CopyMemory((IntPtr)pDest, pSrc, (uint)countInBytes);
+            }
+            finally
+            {
+                handle.Free();
+            }
+
+        }
 	}
 }

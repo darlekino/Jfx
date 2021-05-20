@@ -87,7 +87,7 @@ namespace Rasterizr.Util
         }
 
 		public static void FromByteArray<T>(T[] destination, int destinationOffset, byte[] source, int sourceOffset, int countInBytes)
-			where T : struct
+			where T : unmanaged
 		{
 			unsafe
 			{
@@ -97,7 +97,7 @@ namespace Rasterizr.Util
 		}
 
 		public static void FromByteArray<T>(out T destination, byte[] source, int sourceOffset, int countInBytes)
-			where T : struct
+			where T : unmanaged
 		{
 			// TODO: Add Interop.Read that takes a single struct and count in bytes.
 			var destinationArray = new T[1];

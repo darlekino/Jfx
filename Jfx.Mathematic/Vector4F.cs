@@ -6,15 +6,20 @@ using System.Threading.Tasks;
 
 namespace Jfx.Mathematic
 {
+    public interface IVector4F : IVector3F
+    {
+        public float W { get; }
+    }
+
     public readonly struct Vector4F
     {
         private static readonly Vector4F zero = new Vector4F(0, 0, 0, 0);
         public static ref readonly Vector4F Zero => ref zero;
 
-        public readonly float X;
-        public readonly float Y;
-        public readonly float Z;
-        public readonly float W /* 1 = place, 0 = direction */;
+        public float X { get; }
+        public float Y { get; }
+        public float Z { get; }
+        public float W { get; } /* 1 = point, 0 = direction */
 
         public Vector4F(float x, float y, float z, float w = 1)
         {
@@ -22,6 +27,10 @@ namespace Jfx.Mathematic
             Y = y;
             Z = z;
             W = w;
+        }
+
+        public Vector4F(Vector3F vec3, float w = 1) : this(vec3.X, vec3.Y, vec3.Z, w)
+        {
         }
 
         public static Vector4F operator +(in Vector4F left, in Vector4F right)

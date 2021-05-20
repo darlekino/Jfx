@@ -6,14 +6,19 @@ using System.Threading.Tasks;
 
 namespace Jfx.Mathematic
 {
+    public interface IVector3F : IVector2F
+    {
+        public float Z { get; }
+    }
+
     public readonly struct Vector3F: IEquatable<Vector3F> 
     {
         private static readonly Vector3F zero = new Vector3F(0, 0, 0);
         public static ref readonly Vector3F Zero => ref zero;
 
-        public readonly float X;
-        public readonly float Y;
-        public readonly float Z;
+        public float X { get; }
+        public float Y { get; }
+        public float Z { get; }
 
         public Vector3F(float x, float y, float z)
         {

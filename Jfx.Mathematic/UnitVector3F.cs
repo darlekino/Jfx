@@ -54,7 +54,7 @@ namespace Jfx.Mathematic
         }
 
         public bool IsPerpendicularTo(UnitVector3F othervector, float tolerance = float.Epsilon) 
-            => Math.Abs(this.DotProduct(othervector)) < tolerance;
+            => MathF.Abs(this.DotProduct(othervector)) < tolerance;
 
         public static UnitVector3F Normalize(in Vector3F v)
         {

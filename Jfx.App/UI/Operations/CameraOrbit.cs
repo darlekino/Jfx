@@ -1,10 +1,7 @@
 ﻿using Jfx.App.UI.Inputs;
 using Jfx.Mathematic;
+using Jfx.ThreeDEngine;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jfx.App.UI.Operations
 {

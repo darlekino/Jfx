@@ -12,6 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jfx.Common\Jfx.Common.csproj" />
+    <ProjectReference Include="..\Jfx.Mathematic\Jfx.Mathematic.csproj" />
+    <ProjectReference Include="..\Jfx.ThreeDEngine\Jfx.ThreeDEngine.csproj" />
     <ProjectReference Include="..\Jfx\Jfx.csproj" />
   </ItemGroup>
 

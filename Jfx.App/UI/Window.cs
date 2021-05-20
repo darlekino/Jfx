@@ -4,6 +4,7 @@ using Jfx.Mathematic;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Jfx.ThreeDEngine;
 
 namespace Jfx.App.UI
 {

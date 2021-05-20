@@ -1,16 +1,39 @@
 ﻿using Jfx.App.UI.Inputs;
 using Jfx.Mathematic;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using GDIColor = System.Drawing.Color;
 
 namespace Jfx.App.UI.Gdi
 {
+    struct FSIn : IFSIn
+    {
+        public Vector4F Position { get; set; }
+    }
+
+    class Shader : IShader<Vector3F, FSIn>
+    {
+        private Matrix4F matrixToClip;
+        private static Vector4F white = new Vector4F(1, 1, 1, 1);
+
+        public void Update(in Matrix4F matrixToClip) => this.matrixToClip = matrixToClip;
+
+        public void VertexShader(in Vector3F vsin, out FSIn fsin)
+        {
+            fsin = new FSIn { Position = Vector4F.Transform(new Vector4F(vsin, 1), matrixToClip) };
+        }
+
+        public void FragmentShader(in FSIn fsin, out Vector4F color)
+        {
+            color = white;
+        }
+    }
+
     public class GdiWindow : Window
     {
         enum Space
@@ -20,7 +43,7 @@ namespace Jfx.App.UI.Gdi
             Screen
         }
 
-        class DirectBitmap : IDisposable
+        class DirectBitmap : IDisposable, IFrameBuffer
         {
             public int Width { get; }
             public int Height { get; }
@@ -62,8 +85,18 @@ namespace Jfx.App.UI.Gdi
             public int GetIndex(int x, int y) => x + y * Width;
             public void SetArgb(int x, int y, int argb) => Buffer[GetIndex(x, y)] = argb;
             public int GetArgb(int x, int y) => Buffer[GetIndex(x, y)];
-            public void SetPixel(int x, int y, in Color color) => SetArgb(x, y, color.ToArgb());
-            public Color GetPixel(int x, int y) => Color.FromArgb(GetArgb(x, y));
+            public void SetPixel(int x, int y, in GDIColor color) => SetArgb(x, y, color.ToArgb());
+            public GDIColor GetPixel(int x, int y) => GDIColor.FromArgb(GetArgb(x, y));
+
+            public void PutPixel(int x, int y, in Vector4F color)
+            {
+                var r = (byte)(color.X * byte.MaxValue);
+                var g = (byte)(color.Y * byte.MaxValue);
+                var b = (byte)(color.Z * byte.MaxValue);
+                var a = (byte)(color.W * byte.MaxValue);
+                var argb = ((((a << 8) + r) << 8) + g << 8) + b;
+                SetArgb(x, y, argb);
+            }
         }
 
         private Graphics graphicsHost;
@@ -72,6 +105,8 @@ namespace Jfx.App.UI.Gdi
         private DirectBitmap backBuffer;
         private Font consolas12;
 
+        private Pipeline<Shader, Vector3F, FSIn> pipeline;
+
         public GdiWindow(IntPtr hostHandle, IInput input) : base(hostHandle, input)
         {
             graphicsHost = Graphics.FromHwnd(HostHandle);
@@ -79,6 +114,7 @@ namespace Jfx.App.UI.Gdi
             CreateSurface(bufferSize);
             CreateBuffers(bufferSize);
             consolas12 = new Font("Consolas", 12);
+            pipeline = new Pipeline<Shader, Vector3F, FSIn>(new Shader(), Camera.Viewport, backBuffer);
         }
 
         public override void Dispose()
@@ -205,6 +241,7 @@ namespace Jfx.App.UI.Gdi
 
 
         private static readonly IReadOnlyList<IReadOnlyList<Vector3F>> CubePolylines;
+
         static GdiWindow()
         {
             var points = new[]
@@ -231,7 +268,7 @@ namespace Jfx.App.UI.Gdi
                 new[] { new Vector3F(0, 1, 0), new Vector3F(0, 1, 1), },
             };
 
-            CubePolylines = Transform(Matrix4F.Translate(-0.5f, -0.5f, -0.5f), points);
+            CubePolylines = new List<IReadOnlyList<Vector3F>>(); //Transform(Matrix4F.Translate(-0.5f, -0.5f, -0.5f), points);
         }
 
         private void DrawGeometry()
@@ -263,7 +300,7 @@ namespace Jfx.App.UI.Gdi
 
         protected override void RenderInternal()
         {
-            backBuffer.Graphics.Clear(Color.Black);
+            backBuffer.Graphics.Clear(GDIColor.Black);
             backBuffer.Graphics.DrawString(Fps.ToString(), consolas12, Brushes.Red, 0, 0);
 
             DrawAxis();
