@@ -334,8 +334,8 @@ namespace Jfx.Mathematic
             return new Matrix4F(
                 xScale, 0, 0, 0,
                 0, yScale, 0, 0,
-                0, 0, (znearPlane + zfarPlane) / (zfarPlane - znearPlane), -1,
-                0, 0, 2 * znearPlane * zfarPlane / (zfarPlane - znearPlane), 0
+                0, 0, zfarPlane / (znearPlane - zfarPlane), -1,
+                0, 0, znearPlane * zfarPlane / (znearPlane - zfarPlane), 0
             );
         }
 

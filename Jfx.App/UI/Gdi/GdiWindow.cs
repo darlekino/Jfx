@@ -1,5 +1,6 @@
 ﻿using Jfx.App.UI.Inputs;
 using Jfx.Mathematic;
+using Jfx.ThreeDEngine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -298,13 +299,20 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        protected override void RenderInternal()
+        protected override void RenderInternal(IEnumerable<IModel> models)
         {
             backBuffer.Graphics.Clear(GDIColor.Black);
             backBuffer.Graphics.DrawString(Fps.ToString(), consolas12, Brushes.Red, 0, 0);
 
             DrawAxis();
-            DrawGeometry();
+            //DrawGeometry();
+
+            pipeline.Shader.Update(Camera.MatrixToClip);
+
+            foreach (var m in models)
+            {
+                pipeline.Render(m.GetVertexBuffer(), PrimitiveTopology.PointList);
+            }
 
             // flush and swap buffers
             bufferedGraphics.Graphics.DrawImage(

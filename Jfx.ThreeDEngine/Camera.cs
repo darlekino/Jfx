@@ -7,8 +7,8 @@ namespace Jfx.ThreeDEngine
         public Vector3F Position;
         public Vector3F Target;
         public Vector3F UpVector;
-        public Matrix4F CameraMatrix;
-        public Matrix4F CameraMatrixInverse;
+        public Matrix4F MatrixView;
+        public Matrix4F MatrixViewInverse;
         public Matrix4F MatrixToClip;
         public Matrix4F TransformMatrix;
         public Matrix4F TransformMatrixInverse;
@@ -20,8 +20,8 @@ namespace Jfx.ThreeDEngine
             Position = camera.Position;
             Target = camera.Target;
             UpVector = camera.UpVector;
-            CameraMatrix = camera.CameraMatrix;
-            CameraMatrixInverse = camera.CameraMatrixInverse;
+            MatrixView = camera.MatrixView;
+            MatrixViewInverse = camera.MatrixViewInverse;
             MatrixToClip = camera.MatrixToClip;
             TransformMatrix = camera.TransformMatrix;
             TransformMatrixInverse = camera.TransformMatrixInverse;
@@ -47,17 +47,17 @@ namespace Jfx.ThreeDEngine
         {
             Viewport = new Viewport(Viewport, size);
             Projection = new PerspectiveProjection(Projection, Viewport.AspectRatio);
-            MatrixToClip = CameraMatrix * Projection.Matrix;
+            MatrixToClip = MatrixView * Projection.Matrix;
         }
 
         public void UpdateTransformMatrix()
         {
-            CameraMatrix = Matrix4F.LookAtRH(Position, Target, UpVector);
-            CameraMatrixInverse = CameraMatrix.Inverse();
+            MatrixView = Matrix4F.LookAtRH(Position, Target, UpVector);
+            MatrixViewInverse = MatrixView.Inverse();
 
-            MatrixToClip = CameraMatrix * Projection.Matrix;
+            MatrixToClip = MatrixView * Projection.Matrix;
 
-            TransformMatrix = CameraMatrix * Projection.Matrix * Viewport.Matrix;
+            TransformMatrix = MatrixView * Projection.Matrix * Viewport.Matrix;
             TransformMatrixInverse = TransformMatrix.Inverse();
         }
 

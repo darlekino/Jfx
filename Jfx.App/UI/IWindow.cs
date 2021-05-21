@@ -2,9 +2,6 @@
 using Jfx.ThreeDEngine;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jfx.App.UI
 {
@@ -12,7 +9,7 @@ namespace Jfx.App.UI
     {
         public IInput Input { get; }
         JfxPerspectiveCamera Camera { get; }
-        void Render();
+        void Render(IEnumerable<IModel> models);
         void Resize(in Size size);
     }
 }

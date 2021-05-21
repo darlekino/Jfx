@@ -60,13 +60,13 @@ namespace Jfx.App.UI
         protected abstract void ResizeBuffers(in Size size);
         protected abstract void ResizeSurface(in Size size);
 
-        protected abstract void RenderInternal();
+        protected abstract void RenderInternal(IEnumerable<IModel> models);
 
-        public void Render()
+        public void Render(IEnumerable<IModel> models)
         {
             FrameStarted = DateTime.UtcNow;
             Fps.StartFrame();
-            RenderInternal();
+            RenderInternal(models);
             Fps.EndFrame();
         }
 

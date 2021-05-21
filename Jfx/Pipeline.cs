@@ -1,5 +1,6 @@
 ﻿using Jfx.Mathematic;
 using System;
+using System.Threading.Tasks;
 
 namespace Jfx
 {
@@ -8,17 +9,17 @@ namespace Jfx
         where TVSIn : unmanaged
         where TFSIn : unmanaged, IFSIn
     {
-        private IShader<TVSIn, TFSIn> shader;
+        private TShader shader;
         private Viewport viewport;
         private IFrameBuffer frameBuffer;
 
-        public IShader<TVSIn, TFSIn> Shader
+        public TShader Shader
         {
             get => shader;
             set => shader = value!;
         }
 
-        public Pipeline(IShader<TVSIn, TFSIn> shader, in Viewport viewport, IFrameBuffer frameBuffer)
+        public Pipeline(TShader shader, in Viewport viewport, IFrameBuffer frameBuffer)
         {
             this.shader = shader!;
             this.viewport = viewport;
@@ -30,6 +31,7 @@ namespace Jfx
             switch (primitiveTopology)
             {
                 case PrimitiveTopology.PointList:
+                    PointListTopology.Render(this, buffer);
                     break;
                 case PrimitiveTopology.LineList:
                     break;
@@ -56,10 +58,11 @@ namespace Jfx
         {
             public static unsafe void Render(Pipeline<TShader, TVSIn, TFSIn> pipeline, IVertexBuffer<TVSIn> buffer)
             {
-                for (int i = 0; i < buffer.Count; i++)
-                {
+                Parallel.For(0, buffer.Count, i => { 
+                //for (int i = 0; i < buffer.Count; i++)
+                //{
                     // Vertex shader stage
-                    pipeline.shader.VertexShader(*buffer[i], out TFSIn fsin);
+                    pipeline.shader.VertexShader(buffer[i], out TFSIn fsin);
                     VertexPostProcessing(pipeline, ref fsin);
 
                     int x = (int)fsin.Position.X;
@@ -69,19 +72,22 @@ namespace Jfx
                     // Fragment shader stage
                     pipeline.shader.FragmentShader(fsin, out Vector4F color);
 
-                    if (x < 0 || y < 0 || x >= pipeline.frameBuffer.Width || y >= pipeline.frameBuffer.Height)
+                    if (x >= 0 && y >= 0 && x < pipeline.frameBuffer.Width && y < pipeline.frameBuffer.Height)
                     {
-                        return;
+                        pipeline.frameBuffer.PutPixel(x, y, color);
                     }
-
-                    pipeline.frameBuffer.PutPixel(x, y, color);
-                }
+                //}
+                });
             }
 
             private static void VertexPostProcessing(Pipeline<TShader, TVSIn, TFSIn> pipeline, ref TFSIn fsin)
             {
-                var wInv = 1 / fsin.Position.W;
-                fsin.Position = Vector4F.Transform(new Vector4F(fsin.Position.X * wInv, fsin.Position.Y * wInv, fsin.Position.Z * wInv), pipeline.viewport.Matrix);
+                fsin.Position = Vector4F.Transform(fsin.Position, pipeline.viewport.Matrix);
+                fsin.Position = new Vector4F(
+                    fsin.Position.X / fsin.Position.W,
+                    fsin.Position.Y / fsin.Position.W,
+                    fsin.Position.Z / fsin.Position.W
+                );
             }
         }
     }
