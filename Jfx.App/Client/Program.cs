@@ -35,19 +35,19 @@ namespace Jfx.App.Client
             var matrix = Matrix4F.Scale(10) * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 0.5f);
 
             // point cloud source: http://graphics.stanford.edu/data/3Dscanrep/
-            var bunny1 = StreamPointCloud_XYZ(@"C:\projects\dotnet\RCi.Tutorials.Gfx-master\resources\bunny.xyz")
+            var bunny1 = StreamPointCloud_XYZ(@"..\..\..\..\bunny.xyz")
                 .Select(x => Vector3F.Transform(x, matrix))
                 .ToArray();
 
-            var bunny2 = StreamPointCloud_XYZ(@"C:\projects\dotnet\RCi.Tutorials.Gfx-master\resources\bunny.xyz")
+            var bunny2 = StreamPointCloud_XYZ(@"..\..\..\..\bunny.xyz")
                 .Select(x => Vector3F.Transform(x, matrix * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 0.5f)))
                 .ToArray();
 
-            var bunny3 = StreamPointCloud_XYZ(@"C:\projects\dotnet\RCi.Tutorials.Gfx-master\resources\bunny.xyz")
+            var bunny3 = StreamPointCloud_XYZ(@"..\..\..\..\bunny.xyz")
                 .Select(x => Vector3F.Transform(x, matrix * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 1.0f)))
                 .ToArray();
 
-            var bunny4 = StreamPointCloud_XYZ(@"C:\projects\dotnet\RCi.Tutorials.Gfx-master\resources\bunny.xyz")
+            var bunny4 = StreamPointCloud_XYZ(@"..\..\..\..\bunny.xyz")
                 .Select(x => Vector3F.Transform(x, matrix * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 1.5f)))
                 .ToArray();
 

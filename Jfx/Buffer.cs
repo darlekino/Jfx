@@ -1,10 +1,6 @@
 ﻿using Jfx.Mathematic;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Jfx
 {
@@ -12,19 +8,24 @@ namespace Jfx
         where TVSIn : unmanaged
     {
         public int Count { get; }
-        unsafe TVSIn this[int index] { get; }
+        unsafe TVSIn* this[int index] { get; }
     }
 
-    public class VertexBuffer : IVertexBuffer<Vector3F>
+    public class VertexBuffer : IVertexBuffer<Vector3F>, IDisposable
     {
         public readonly Vector3F[] array;
+        private readonly GCHandle handle;
+        private readonly IntPtr ptr;
 
         public VertexBuffer(Vector3F[] array)
         {
             this.array = array;
+            handle = GCHandle.Alloc(array, GCHandleType.Pinned);
+            ptr = handle.AddrOfPinnedObject();
         }
 
         public int Count => array.Length;
-        public unsafe Vector3F this[int index] => array[index];
+        public unsafe Vector3F* this[int index] => (Vector3F*)(ptr + (sizeof(Vector3F) * index));
+        public void Dispose() => handle.Free();
     }
 }
