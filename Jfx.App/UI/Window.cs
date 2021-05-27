@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Jfx.ThreeDEngine;
+using Jfx.App.UI.Gdi;
 
 namespace Jfx.App.UI
 {
@@ -62,7 +63,7 @@ namespace Jfx.App.UI
 
         protected abstract void RenderInternal(IEnumerable<IModel> models);
 
-        public void Render(IEnumerable<IModel> models)
+        public void Render(IEnumerable<Visual> models)
         {
             FrameStarted = DateTime.UtcNow;
             Fps.StartFrame();

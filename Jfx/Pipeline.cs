@@ -4,36 +4,56 @@ using System.Threading.Tasks;
 
 namespace Jfx
 {
-    public class Pipeline<TShader, TVSIn, TFSIn>
-        where TShader : IShader<TVSIn, TFSIn>
-        where TVSIn : unmanaged
-        where TFSIn : unmanaged, IFSIn
+    public enum PrimitiveTopology
     {
-        private TShader shader;
-        private Viewport viewport;
-        private IFrameBuffer frameBuffer;
+        PointList,
+        LineList,
+        LineStrip,
+        TriangleList,
+        TriangleStrip,
+    }
 
-        public TShader Shader
+    public enum Processing
+    {
+        Parallel,
+        Sequential
+    }
+
+
+    public class Pipeline
+    {
+        private IFrameBuffer FrameBuffer { get; }
+        public Viewport Viewport { get; set; }
+
+        public Pipeline(in Viewport viewport, IFrameBuffer frameBuffer)
         {
-            get => shader;
-            set => shader = value!;
+            Viewport = viewport;
+            FrameBuffer = frameBuffer!;
         }
 
-        public Pipeline(TShader shader, in Viewport viewport, IFrameBuffer frameBuffer)
-        {
-            this.shader = shader!;
-            this.viewport = viewport;
-            this.frameBuffer = frameBuffer!;
-        }
-
-        public void Render(IVertexBuffer<TVSIn> buffer, PrimitiveTopology primitiveTopology)
+        public void Render<TVSIn, TFSIn>(IShader<TVSIn, TFSIn> shader, IVertexBuffer<TVSIn> buffer, PrimitiveTopology primitiveTopology, Processing processing)
+            where TVSIn : unmanaged
+            where TFSIn : unmanaged
         {
             switch (primitiveTopology)
             {
                 case PrimitiveTopology.PointList:
-                    PointListTopology.Render(this, buffer);
+                    {
+                        switch (processing)
+                        {
+                            case Processing.Parallel: PointListTopology.ParallerRender(this, shader, buffer); break;
+                            case Processing.Sequential: PointListTopology.SequentialRender(this, shader, buffer); break;
+                        }
+                    }
                     break;
                 case PrimitiveTopology.LineList:
+                    {
+                        switch (processing)
+                        {
+                            case Processing.Parallel: LineListToPology.ParallerRender(this, shader, buffer); break;
+                            case Processing.Sequential: LineListToPology.SequentialRender(this, shader, buffer); break;
+                        }
+                    }
                     break;
                 case PrimitiveTopology.LineStrip:
                     break;
@@ -41,92 +61,168 @@ namespace Jfx
                     break;
                 case PrimitiveTopology.TriangleStrip:
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(primitiveTopology));
             }
+        }
+
+        private void VertexPostProcessing<TFSIn>(Pipeline pipeline, ref TFSIn fsin)
+            where TFSIn : unmanaged, IFSIn
+        {
+            float wInv = 1 / fsin.Position.W;
+            fsin.Position = Vector4F.Transform(fsin.Position, pipeline.Viewport.Matrix);
+            fsin.Position = new Vector4F(
+                fsin.Position.X * wInv,
+                fsin.Position.Y * wInv,
+                fsin.Position.Z * wInv
+            );
+        }
+
+        private bool IsOnScreen(int x, int y)
+        {
+            return x >= 0 && y >= 0 && x < FrameBuffer.Width && y < FrameBuffer.Height;
         }
 
         private static class Clipping
         {
-            public static bool IsOutside(in TFSIn fsin)
+            public static bool IsOutside<TFSIn>(in TFSIn fsin)
+                where TFSIn : unmanaged, IFSIn
             {
                 return false;
             }
         }
 
-        private class Utils
-        {
-            public static void VertexPostProcessing(Pipeline<TShader, TVSIn, TFSIn> pipeline, ref TFSIn fsin)
-            {
-                fsin.Position = Vector4F.Transform(fsin.Position, pipeline.viewport.Matrix);
-                fsin.Position = new Vector4F(
-                    fsin.Position.X / fsin.Position.W,
-                    fsin.Position.Y / fsin.Position.W,
-                    fsin.Position.Z / fsin.Position.W
-                );
-            }
-        }
-
         private static class PointListTopology
         {
-            public unsafe static void Render(Pipeline<TShader, TVSIn, TFSIn> pipeline, IVertexBuffer<TVSIn> buffer)
+            public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, IVertexBuffer<TVSIn> buffer)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged
             {
-                Parallel.For(0, buffer.Count, i => { 
-                //for (int i = 0; i < buffer.Count; i++)
-                //{
-                    // Vertex shader stage
-                    pipeline.shader.VertexShader(*buffer[i], out TFSIn fsin);
-                    Utils.VertexPostProcessing(pipeline, ref fsin);
+                TVSIn* vsin = buffer.UnsafeVertexPtr();
+                Parallel.For(0, buffer.Count, i => Render(pipeline, shader, *(vsin + i)));
+            }
 
-                    int x = (int)fsin.Position.X;
-                    int y = (int)fsin.Position.Y;
+            public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, IVertexBuffer<TVSIn> buffer)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged
+            {
+                TVSIn* vsin = buffer.UnsafeVertexPtr();
+                for (int i = 0; i < buffer.Count; i++)
+                    Render(pipeline, shader, *(vsin + i));
+            }
+
+            public static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, in TVSIn vsin)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged
+            {
+                // Vertex shader stage
+                shader.VertexShader(vsin, out TFSIn fsin);
+                pipeline.VertexPostProcessing(pipeline, ref fsin);
+
+                int x = (int)fsin.Position.X;
+                int y = (int)fsin.Position.Y;
+
+                if (pipeline.IsOnScreen(x, y))
+                {
                     float z = fsin.Position.Z;
 
                     // Fragment shader stage
-                    pipeline.shader.FragmentShader(fsin, out Vector4F color);
+                    shader.FragmentShader(fsin, out Vector4F color);
 
-                    if (x >= 0 && y >= 0 && x < pipeline.frameBuffer.Width && y < pipeline.frameBuffer.Height)
-                    {
-                        pipeline.frameBuffer.PutPixel(x, y, color);
-                    }
-                //}
-                });
+                    pipeline.FrameBuffer.PutPixel(x, y, color);
+                }
             }
         }
 
         private static class LineListToPology
         {
-            public unsafe static void Render(Pipeline<TShader, TVSIn, TFSIn> pipeline, IVertexBuffer<TVSIn> buffer)
+            private static void Check<TVSIn>(IVertexBuffer<TVSIn> buffer)
+                where TVSIn : unmanaged
             {
-                //Parallel.For(0, buffer.Count, i => {
-                for (int i = 0; i < buffer.Count; i+=2)
+                if (buffer.Count % 2 != 0)
+                    throw new ArgumentException($"line list topology cannot be used to render odd count of vertices");
+            }
+
+            public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, IVertexBuffer<TVSIn> buffer)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged, IFSIn
+            {
+                Check(buffer);
+                TVSIn* vsin = buffer.UnsafeVertexPtr();
+                Parallel.For(0, buffer.Count / 2, i => {
+                    var index = i * 2;
+                    Render(pipeline, shader, *(vsin + index), *(vsin + index + 1));
+                });
+            }
+
+            public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, IVertexBuffer<TVSIn> buffer)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged, IFSIn
+            {
+                Check(buffer);
+                TVSIn* vsin = buffer.UnsafeVertexPtr();
+                for (int i = 0; i < buffer.Count / 2; i++)
                 {
-                    int index0 = i;
-                    int index1 = i + 1;
-                    // Vertex shader stage
-                    pipeline.shader.VertexShader(*buffer[index0], out TFSIn fsin0);
-                    pipeline.shader.VertexShader(*buffer[index1], out TFSIn fsin1);
-                    Utils.VertexPostProcessing(pipeline, ref fsin0);
-                    Utils.VertexPostProcessing(pipeline, ref fsin1);
-
-                    int x0 = (int)fsin0.Position.X;
-                    int y0 = (int)fsin0.Position.Y;
-                    float z0 = fsin0.Position.Z;
-
-                    int x1 = (int)fsin1.Position.X;
-                    int y1 = (int)fsin1.Position.Y;
-                    float z1 = fsin1.Position.Z;
-
-                    // Fragment shader stage
-                    pipeline.shader.FragmentShader(fsin0, out Vector4F color0);
-                    pipeline.shader.FragmentShader(fsin1, out Vector4F color1);
-
-                    //if (x >= 0 && y >= 0 && x < pipeline.frameBuffer.Width && y < pipeline.frameBuffer.Height)
-                    //{
-                    //    pipeline.frameBuffer.PutPixel(x, y, color);
-                    //}
+                    var index = i * 2;
+                    Render(pipeline, shader, *(vsin + index), *(vsin + index + 1));
                 }
-                //});
+            }
+
+            public static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShader<TVSIn, TFSIn> shader, in TVSIn vsin0, in TVSIn vsin1)
+                where TVSIn : unmanaged
+                where TFSIn : unmanaged, IFSIn
+            {
+                // Vertex shader stage
+                shader.VertexShader(vsin0, out TFSIn fsin0);
+                shader.VertexShader(vsin1, out TFSIn fsin1);
+                pipeline.VertexPostProcessing(pipeline, ref fsin0);
+                pipeline.VertexPostProcessing(pipeline, ref fsin1);
+
+                int x1 = (int)fsin0.Position.X;
+                int y1 = (int)fsin0.Position.Y;
+                float z1 = fsin0.Position.Z;
+
+                int x2 = (int)fsin1.Position.X;
+                int y2 = (int)fsin1.Position.Y;
+                float z2 = fsin1.Position.Z;
+
+                int w = x2 - x1;
+                int h = y2 - y1;
+                int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+                if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+                if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+                if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+                int longest = Math.Abs(w);
+                int shortest = Math.Abs(h);
+                if (longest < shortest)
+                {
+                    (longest,shortest) = (shortest, longest);
+                    if (h < 0) 
+                        dy2 = -1; 
+                    else if (h > 0) 
+                        dy2 = 1;
+                    dx2 = 0;
+                }
+                int numerator = longest >> 1;
+                for (int i = 0; i <= longest; i++)
+                {
+                    if (pipeline.IsOnScreen(x1, y1))
+                    {
+                        shader.FragmentShader(default, out Vector4F color);
+                        pipeline.FrameBuffer.PutPixel(x1, y1, color);
+                    }
+
+                    numerator += shortest;
+                    if (!(numerator < longest))
+                    {
+                        numerator -= longest;
+                        x1 += dx1;
+                        y1 += dy1;
+                    }
+                    else
+                    {
+                        x1 += dx2;
+                        y1 += dy2;
+                    }
+                }
             }
 
             //    void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color)

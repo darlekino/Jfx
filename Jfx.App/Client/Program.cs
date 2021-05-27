@@ -1,6 +1,5 @@
 ﻿using Jfx.App.UI;
 using Jfx.Mathematic;
-using Jfx.ThreeDEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,7 +12,7 @@ namespace Jfx.App.Client
     {
         private IWindow window;
 
-        static IModel[] models;
+        static Visual[] visuals;
 
         public static IEnumerable<Vector3F> StreamPointCloud_XYZ(string filePath)
         {

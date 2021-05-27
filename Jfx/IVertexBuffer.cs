@@ -8,7 +8,7 @@ namespace Jfx
         where TVSIn : unmanaged
     {
         public int Count { get; }
-        unsafe TVSIn* this[int index] { get; }
+        public unsafe TVSIn* UnsafeVertexPtr();
     }
 
     public class VertexBuffer : IVertexBuffer<Vector3F>, IDisposable
@@ -25,7 +25,7 @@ namespace Jfx
         }
 
         public int Count => array.Length;
-        public unsafe Vector3F* this[int index] => (Vector3F*)(ptr + (sizeof(Vector3F) * index));
+        public unsafe Vector3F* UnsafeVertexPtr() => (Vector3F*)ptr;
         public void Dispose() => handle.Free();
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Jfx.App.UI.Inputs;
 using Jfx.Mathematic;
-using Jfx.ThreeDEngine;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,29 +11,6 @@ using GDIColor = System.Drawing.Color;
 
 namespace Jfx.App.UI.Gdi
 {
-    struct FSIn : IFSIn
-    {
-        public Vector4F Position { get; set; }
-    }
-
-    class Shader : IShader<Vector3F, FSIn>
-    {
-        private Matrix4F matrixToClip;
-        private static Vector4F white = new Vector4F(1, 1, 1, 1);
-
-        public void Update(in Matrix4F matrixToClip) => this.matrixToClip = matrixToClip;
-
-        public void VertexShader(in Vector3F vsin, out FSIn fsin)
-        {
-            fsin = new FSIn { Position = Vector4F.Transform(new Vector4F(vsin, 1), matrixToClip) };
-        }
-
-        public void FragmentShader(in FSIn fsin, out Vector4F color)
-        {
-            color = white;
-        }
-    }
-
     public class GdiWindow : Window
     {
         enum Space
@@ -105,8 +81,8 @@ namespace Jfx.App.UI.Gdi
         private BufferedGraphics bufferedGraphics;
         private DirectBitmap backBuffer;
         private Font consolas12;
-
-        private Pipeline<Shader, Vector3F, FSIn> pipeline;
+        private Shader shader;
+        private Pipeline pipeline;
 
         public GdiWindow(IntPtr hostHandle, IInput input) : base(hostHandle, input)
         {
@@ -115,7 +91,8 @@ namespace Jfx.App.UI.Gdi
             CreateSurface(bufferSize);
             CreateBuffers(bufferSize);
             consolas12 = new Font("Consolas", 12);
-            pipeline = new Pipeline<Shader, Vector3F, FSIn>(new Shader(), Camera.Viewport, backBuffer);
+            shader = new Shader();
+            pipeline = new Pipeline(Camera.Viewport, backBuffer);
         }
 
         public override void Dispose()
@@ -127,7 +104,6 @@ namespace Jfx.App.UI.Gdi
             DisposeBuffers();
 
             graphicsHost.ReleaseHdc(graphicsHostDeviceContext);
-
             graphicsHost.Dispose();
 
             base.Dispose();
@@ -299,7 +275,7 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        protected override void RenderInternal(IEnumerable<IModel> models)
+        protected override void RenderInternal(IEnumerable<Visual> models)
         {
             backBuffer.Graphics.Clear(GDIColor.Black);
             backBuffer.Graphics.DrawString(Fps.ToString(), consolas12, Brushes.Red, 0, 0);
@@ -307,11 +283,11 @@ namespace Jfx.App.UI.Gdi
             DrawAxis();
             //DrawGeometry();
 
-            pipeline.Shader.Update(Camera.MatrixToClip);
+            shader.Update(Camera.MatrixToClip);
 
             foreach (var m in models)
             {
-                pipeline.Render(m.GetVertexBuffer(), PrimitiveTopology.PointList);
+                pipeline.Render(shader, m.GetVertexBuffer(), PrimitiveTopology.PointList, Processing.Parallel);
             }
 
             // flush and swap buffers

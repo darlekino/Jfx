@@ -9,14 +9,9 @@ namespace Jfx
 {
     public interface IShader<TVIn, TFIn>
         where TVIn : unmanaged
-        where TFIn : unmanaged, IFSIn
+        where TFIn : unmanaged
     {
-        void VertexShader(in TVIn vsin, out TFIn fsin);
-        void FragmentShader(in TFIn fsin, out Vector4F color);
-    }
-
-    public interface IFSIn
-    {
-        public Vector4F Position { get; set; }
+        Vector4F VertexShader(in TVIn vsin, out TFIn fsin);
+        Vector4F FragmentShader(in TFIn fsin, in Vector4F fragCoord);
     }
 }
