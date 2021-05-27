@@ -6,7 +6,7 @@ namespace Jfx
     {
         public Vector3F[] Positions { get; }
 
-        public Model(Vector3F[] positions)
+        public Model(params Vector3F[] positions)
         {
             Positions = positions;
         }

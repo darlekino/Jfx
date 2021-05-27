@@ -9,7 +9,7 @@ namespace Jfx.App.UI
     {
         public IInput Input { get; }
         JfxPerspectiveCamera Camera { get; }
-        void Render(IEnumerable<IModel> models);
+        void Render(IEnumerable<Visual> models);
         void Resize(in Size size);
     }
 }

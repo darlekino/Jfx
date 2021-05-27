@@ -12,6 +12,6 @@ namespace Jfx
         where TFIn : unmanaged
     {
         Vector4F VertexShader(in TVIn vsin, out TFIn fsin);
-        Vector4F FragmentShader(in TFIn fsin, in Vector4F fragCoord);
+        Vector4F FragmentShader(in Vector4F fragCoord, in TFIn fsin);
     }
 }

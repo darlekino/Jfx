@@ -9,11 +9,15 @@ namespace Jfx.App.UI
         private readonly VertexBuffer vertexBuffer;
 
         public Shader Shader { get; }
+        public PrimitiveTopology PrimitiveTopology { get; }
+        public Processing Processing { get; }
 
-        public Visual(IModel model, Shader shader)
+        public Visual(IModel model, Shader shader, PrimitiveTopology primitiveTopology, Processing processing)
         {
             this.model = model;
             Shader = shader;
+            PrimitiveTopology = primitiveTopology;
+            Processing = processing;
             this.vertexBuffer = new VertexBuffer(model.Positions);
         }
 
@@ -22,26 +26,25 @@ namespace Jfx.App.UI
         public void Dispose() => vertexBuffer.Dispose();
     }
 
-    public struct FSIn : IFSIn
-    {
-        public Vector4F Position { get; set; }
-    }
-
-    public class Shader : IShader<Vector3F, FSIn>
+    public class Shader : IShader<Vector3F, Nothing>
     {
         private Matrix4F matrixToClip;
         private static Vector4F white = new Vector4F(1, 1, 1, 1);
+        private readonly Vector4F color;
+
+        public Shader(Vector4F? color = null)
+        {
+            this.color = color ?? white;
+        }
 
         public void Update(in Matrix4F matrixToClip) => this.matrixToClip = matrixToClip;
 
-        public void VertexShader(in Vector3F vsin, out FSIn fsin)
+        public Vector4F VertexShader(in Vector3F vsin, out Nothing fsin)
         {
-            fsin = new FSIn { Position = Vector4F.Transform(new Vector4F(vsin, 1), matrixToClip) };
+            fsin = default;
+            return Vector4F.Transform(new Vector4F(vsin, 1), matrixToClip);
         }
 
-        public void FragmentShader(in FSIn fsin, out Vector4F color)
-        {
-            color = white;
-        }
+        public Vector4F FragmentShader(in Vector4F fragCoord, in Nothing _) => color;
     }
 }

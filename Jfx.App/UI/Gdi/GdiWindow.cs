@@ -81,7 +81,6 @@ namespace Jfx.App.UI.Gdi
         private BufferedGraphics bufferedGraphics;
         private DirectBitmap backBuffer;
         private Font consolas12;
-        private Shader shader;
         private Pipeline pipeline;
 
         public GdiWindow(IntPtr hostHandle, IInput input) : base(hostHandle, input)
@@ -91,7 +90,6 @@ namespace Jfx.App.UI.Gdi
             CreateSurface(bufferSize);
             CreateBuffers(bufferSize);
             consolas12 = new Font("Consolas", 12);
-            shader = new Shader();
             pipeline = new Pipeline(Camera.Viewport, backBuffer);
         }
 
@@ -209,13 +207,6 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        private void DrawAxis()
-        {
-            DrawPolyline(Pens.Red, Space.World, new Vector3F(0, 0, 0), new Vector3F(1, 0, 0));
-            DrawPolyline(Pens.LawnGreen, Space.World, new Vector3F(0, 0, 0), new Vector3F(0, 1, 0));
-            DrawPolyline(Pens.Blue, Space.World, new Vector3F(0, 0, 0), new Vector3F(0, 0, 1));
-        }
-
 
         private static readonly IReadOnlyList<IReadOnlyList<Vector3F>> CubePolylines;
 
@@ -275,19 +266,17 @@ namespace Jfx.App.UI.Gdi
             }
         }
 
-        protected override void RenderInternal(IEnumerable<Visual> models)
+        protected override void RenderInternal(IEnumerable<Visual> visuals)
         {
             backBuffer.Graphics.Clear(GDIColor.Black);
             backBuffer.Graphics.DrawString(Fps.ToString(), consolas12, Brushes.Red, 0, 0);
 
-            DrawAxis();
             //DrawGeometry();
 
-            shader.Update(Camera.MatrixToClip);
-
-            foreach (var m in models)
+            foreach (var v in visuals)
             {
-                pipeline.Render(shader, m.GetVertexBuffer(), PrimitiveTopology.PointList, Processing.Parallel);
+                v.Shader.Update(Camera.MatrixToClip);
+                pipeline.Render(v.Shader, v.GetVertexBuffer(), v.PrimitiveTopology, v.Processing);
             }
 
             // flush and swap buffers

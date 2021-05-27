@@ -61,7 +61,7 @@ namespace Jfx.App.UI
         protected abstract void ResizeBuffers(in Size size);
         protected abstract void ResizeSurface(in Size size);
 
-        protected abstract void RenderInternal(IEnumerable<IModel> models);
+        protected abstract void RenderInternal(IEnumerable<Visual> models);
 
         public void Render(IEnumerable<Visual> models)
         {
