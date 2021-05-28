@@ -121,7 +121,7 @@ namespace Jfx.Mathematic
 
             float det = a * a11 + b * a12 + c * a13 + d * a14;
 
-            if (Math.Abs(det) < float.Epsilon)
+            if (MathF.Abs(det) < float.Epsilon)
             {
                 throw new InvalidOperationException("Determinant equal to zero!");
             }
@@ -182,7 +182,7 @@ namespace Jfx.Mathematic
 
             float det = a * a11 + b * a12 + c * a13 + d * a14;
 
-            if (Math.Abs(det) < float.Epsilon)
+            if (MathF.Abs(det) < float.Epsilon)
             {
                 result = new Matrix4F(
                     float.NaN, float.NaN, float.NaN, float.NaN,
