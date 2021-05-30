@@ -21,74 +21,34 @@ namespace Jfx.App.Client
 
         static Visual[] visuals;
 
-        public static IEnumerable<Vector3F> StreamPointCloud_XYZ(string filePath)
-        {
-            using (var inputStream = new FileStream(filePath, FileMode.Open))
-            {
-                var pointCount = inputStream.Length / (4 * 3); // 4 bytes per float, 3 floats per vertex
-                using (var reader = new BinaryReader(inputStream))
-                {
-                    for (var i = 0L; i < pointCount; i++)
-                    {
-                        yield return new Vector3F(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                    }
-                }
-            }
-        }
+        
 
         static Program()
         {
             var matrix = Matrix4F.Scale(10) * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 0.5f);
 
             // point cloud source: http://graphics.stanford.edu/data/3Dscanrep/
-            var bunny1 = StreamPointCloud_XYZ(@"..\..\..\..\bunny.xyz")
-                .Select(x => Vector3F.Transform(x, matrix))
-                .ToArray();
+            var bunny1 = Seed.Bunny().Select(x => Vector3F.Transform(x, matrix));
 
             var x = new Model(new Vector3F(0, 0, 0), new Vector3F(1, 0, 0));
             var y = new Model(new Vector3F(0, 0, 0), new Vector3F(0, 1, 0));
             var z = new Model(new Vector3F(0, 0, 0), new Vector3F(0, 0, 1));
 
-            Visual[] cube = new[]
-             {
-                new[]
-                {
-                    new Vector3F(0, 0, 0),
-                    new Vector3F(1, 0, 0),
-                    new Vector3F(1, 1, 0),
-                    new Vector3F(0, 1, 0),
-                    new Vector3F(0, 0, 0),
-                },
-                new[]
-                {
-                    new Vector3F(0, 0, 1),
-                    new Vector3F(1, 0, 1),
-                    new Vector3F(1, 1, 1),
-                    new Vector3F(0, 1, 1),
-                    new Vector3F(0, 0, 1),
-                },
-                new[] { new Vector3F(0, 0, 0), new Vector3F(0, 0, 1), },
-                new[] { new Vector3F(1, 0, 0), new Vector3F(1, 0, 1), },
-                new[] { new Vector3F(1, 1, 0), new Vector3F(1, 1, 1), },
-                new[] { new Vector3F(0, 1, 0), new Vector3F(0, 1, 1), },
-            }
-            .Select(polyline => new Model(polyline.Select(v => Vector3F.Transform(v, Matrix4F.Translate(-0.5f, -0.5f, -0.5f))).ToArray()))
-            .Select(m => new Visual(m, new Shader(Color.White.ToVector()), PrimitiveTopology.LineStrip, Processing.Sequential))
-            .ToArray();
+            Visual[] cube = Seed.Cube()
+                .Select(polyline => new Model(polyline.Select(v => Vector3F.Transform(v, Matrix4F.Translate(-0.5f, -0.5f, -0.5f))).ToArray()))
+                .Select(m => new Visual(m, new Shaders(Color.White.ToVector()), PrimitiveTopology.LineStrip, Processing.Sequential))
+                .ToArray();
 
             visuals = new Visual[]
             {
                 //new Visual(new Model(bunny1), new Shader(), PrimitiveTopology.PointList, Processing.Parallel),
-                new Visual(x, new Shader(Color.Red.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
-                new Visual(y, new Shader(Color.LawnGreen.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
-                new Visual(z, new Shader(Color.Blue.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
-                cube[0],
-                cube[1],
-                cube[2],
-                cube[3],
-                cube[4],
-                cube[5],
-            };
+                new Visual(x, new Shaders(Color.Red.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
+                new Visual(y, new Shaders(Color.LawnGreen.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
+                new Visual(z, new Shaders(Color.Blue.ToVector()), PrimitiveTopology.LineList, Processing.Sequential)
+            }
+            .Concat(cube)
+            .Concat(Seed.Triangles())
+            .ToArray();
         }
 
         public Program()

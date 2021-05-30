@@ -7,11 +7,24 @@ using System.Threading.Tasks;
 
 namespace Jfx
 {
-    public interface IShader<TVIn, TFIn>
+    public interface IVertexShader<TVIn, TVOut>
+        where TVIn : unmanaged
+        where TVOut : unmanaged
+    {
+        Vector4F ExecuteStage(in TVIn vsin, out TVOut fsin);
+    }
+
+    public interface IFragmentShader<TFIn>
+        where TFIn : unmanaged
+    {
+        Vector4F ExecuteStage(in Vector4F fragCoord, in TFIn fsin);
+    }
+
+    public interface IShaders<TVIn, TFIn>
         where TVIn : unmanaged
         where TFIn : unmanaged
     {
-        Vector4F VertexShader(in TVIn vsin, out TFIn fsin);
-        Vector4F FragmentShader(in Vector4F fragCoord, in TFIn fsin);
+        public IVertexShader<TVIn, TFIn> VertexShader { get; }
+        public IFragmentShader<TFIn> FragmentShader { get; }
     }
 }
