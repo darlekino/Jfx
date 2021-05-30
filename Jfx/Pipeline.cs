@@ -437,14 +437,18 @@ namespace Jfx
                 edgeRight += deltaRight * (yStart - edgeRight.Y + 0.5f);
 
                 // go vertically down
-#if USE_PARALLEL
+#if !USE_PARALLEL
             Parallel.For(yStart, yEnd, y =>
 #else
                 for (int y = yStart; y < yEnd; y++)
 #endif
                 {
-                    int xStart = TriangleClampX((int)MathF.Round(edgeLeft.X), pipeline.Viewport);
-                    int xEnd = TriangleClampX((int)MathF.Round(edgeRight.X), pipeline.Viewport);
+                    int k = y - yStart;
+                    Vector4F eLeft = edgeLeft + deltaLeft * k;
+                    Vector4F eRight = edgeRight + deltaRight * k;
+
+                    int xStart = TriangleClampX((int)MathF.Round(eLeft.X), pipeline.Viewport);
+                    int xEnd = TriangleClampX((int)MathF.Round(eRight.X), pipeline.Viewport);
 
                     // go horizontally (execute scanline)
                     for (int x = xStart; x < xEnd; x++)
@@ -456,11 +460,8 @@ namespace Jfx
                             pipeline.FrameBuffer.PutPixel(x, y, color);
                         }
                     }
-
-                    edgeLeft += deltaLeft;
-                    edgeRight += deltaRight;
                 }
-#if USE_PARALLEL
+#if !USE_PARALLEL
             ); // end of Parallel.For
 #endif
             }
