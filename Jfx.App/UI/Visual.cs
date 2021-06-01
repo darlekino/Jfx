@@ -49,7 +49,11 @@ namespace Jfx.App.UI
             this.color = color ?? white;
         }
 
-        public Vector4F ExecuteStage(in Vector4F fragCoord, in Nothing _) => color;
+        public bool ExecuteStage(in Vector4F fragCoord, in Nothing _, out Vector4F color)
+        {
+            color = this.color;
+            return true;
+        }
     }
 
     public class Shaders : IShaders<Vector3F, Nothing>

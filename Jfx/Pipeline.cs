@@ -139,71 +139,143 @@ namespace Jfx
                     float z = position.Z;
 
                     // Fragment shader stage
-                    Vector4F color = shader.FragmentShader.ExecuteStage(position, fsin);
-
-                    pipeline.FrameBuffer.PutPixel(x, y, color);
+                    if (shader.FragmentShader.ExecuteStage(position, fsin, out Vector4F color))
+                    {
+                        pipeline.FrameBuffer.PutPixel(x, y, color);
+                    }
                 }
             }
         }
 
         private static class Line
         {
+            private struct BresenhamLine
+            {
+                public Vector4F P0 { get; }
+                public Vector4F P1 { get; }
+
+                public BresenhamLine(in Vector4F p0, in Vector4F p1)
+                {
+                    P0 = p0;
+                    P1 = p1;
+                }
+
+                public Enumerator GetEnumerator() => new Enumerator(P0, P1);
+
+                public struct Enumerator
+                {
+                    private int dx0;
+                    private int dy0;
+                    private int dx1;
+                    private int dy1;
+                    private int longest;
+                    private int shortest;
+                    private int numerator;
+
+                    private int index;
+                    private int x;
+                    private int y;
+
+                    internal Enumerator(in Vector4F p0, in Vector4F p1)
+                    {
+                        int x0 = (int)p0.X;
+                        int y0 = (int)p0.Y;
+
+                        int x1 = (int)p1.X;
+                        int y1 = (int)p1.Y;
+
+                        int w = x1 - x0;
+                        int h = y1 - y0;
+
+                        dx0 = 0;
+                        dy0 = 0;
+                        dx1 = 0;
+                        dy1 = 0;
+                        if (w < 0) dx0 = -1; else if (w > 0) dx0 = 1;
+                        if (h < 0) dy0 = -1; else if (h > 0) dy0 = 1;
+                        if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+
+                        longest = Math.Abs(w);
+                        shortest = Math.Abs(h);
+
+                        if (longest < shortest)
+                        {
+                            Swap(ref longest, ref shortest);
+                            if (h < 0)
+                            {
+                                dy1 = -1;
+                            }
+                            else if (h > 0)
+                            {
+                                dy1 = 1;
+                            }
+                            dx1 = 0;
+                        }
+
+                        numerator = longest >> 1;
+                        index = -1;
+                        x = x0;
+                        y = y0;
+                    }
+                    
+                    public bool MoveNext()
+                    {
+                        numerator += shortest;
+                        if (!(numerator < longest))
+                        {
+                            numerator -= longest;
+                            x += dx0;
+                            y += dy0;
+                        }
+                        else
+                        {
+                            x += dx1;
+                            y += dy1;
+                        }
+
+                        return ++index <= longest;
+                    }
+
+                    public (int, int) Current => (x, y);
+
+                    public void Reset() => index = -1;
+                    public void Dispose() { }
+
+                    private static void Swap(ref int x0, ref int x1)
+                    {
+                        int tmp = x0;
+                        x0 = x1;
+                        x1 = tmp;
+                    }
+                }
+            }
+
             private static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, in TVSIn vsin0, in TVSIn vsin1)
                 where TVSIn : unmanaged
                 where TFSIn : unmanaged
             {
-                // Vertex shader stage
                 Vector4F position1 = shaders.VertexShader.ExecuteStage(vsin0, out TFSIn fsin0);
                 Vector4F position2 = shaders.VertexShader.ExecuteStage(vsin1, out TFSIn fsin1);
+
                 Vector4F screenPosition1 = pipeline.VertexPostProcessing(position1);
                 Vector4F screenPosition2 = pipeline.VertexPostProcessing(position2);
 
-                int x1 = (int)screenPosition1.X;
-                int y1 = (int)screenPosition1.Y;
-                float z1 = screenPosition1.Z;
+                Rasterize(pipeline, shaders.FragmentShader, screenPosition1, screenPosition2);
+            }
 
-                int x2 = (int)screenPosition2.X;
-                int y2 = (int)screenPosition2.Y;
-                float z2 = screenPosition2.Z;
+            private static void Rasterize<TFSIn>(Pipeline pipeline, IFragmentShader<TFSIn> fragmentShader, in Vector4F p0, in Vector4F p1)
+                where TFSIn : unmanaged
 
-                int w = x2 - x1;
-                int h = y2 - y1;
-                int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
-                if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
-                if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
-                if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
-                int longest = Math.Abs(w);
-                int shortest = Math.Abs(h);
-                if (longest < shortest)
+            {
+                foreach (var (x, y) in new BresenhamLine(p0, p1))
                 {
-                    (longest, shortest) = (shortest, longest);
-                    if (h < 0)
-                        dy2 = -1;
-                    else if (h > 0)
-                        dy2 = 1;
-                    dx2 = 0;
-                }
-                int numerator = longest >> 1;
-                for (int i = 0; i <= longest; i++)
-                {
-                    if (pipeline.IsOnScreen(x1, y1))
+                    if (pipeline.IsOnScreen(x, y))
                     {
                         //throw new NotImplementedException();
-                        Vector4F color = shaders.FragmentShader.ExecuteStage(default, default);
-                        pipeline.FrameBuffer.PutPixel(x1, y1, color);
-                    }
-
-                    numerator += shortest;
-                    if (!(numerator < longest))
-                    {
-                        numerator -= longest;
-                        x1 += dx1;
-                        y1 += dy1;
-                    }
-                    else
-                    {
-                        x1 += dx2;
-                        y1 += dy2;
+                        if (fragmentShader.ExecuteStage(default, default, out Vector4F color))
+                        {
+                            pipeline.FrameBuffer.PutPixel(x, y, color);
+                        }
                     }
                 }
             }
@@ -456,8 +528,10 @@ namespace Jfx
                         if (pipeline.IsOnScreen(x, y))
                         {
                             //throw new NotImplementedException();
-                            Vector4F color = fragmentShader.ExecuteStage(default, default);
-                            pipeline.FrameBuffer.PutPixel(x, y, color);
+                            if (fragmentShader.ExecuteStage(default, default, out Vector4F color))
+                            {
+                                pipeline.FrameBuffer.PutPixel(x, y, color);
+                            }
                         }
                     }
                 }

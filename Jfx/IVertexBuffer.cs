@@ -7,25 +7,29 @@ namespace Jfx
     public interface IVertexBuffer<TVSIn>
         where TVSIn : unmanaged
     {
-        public int Count { get; }
-        public unsafe TVSIn* UnsafeVertexPtr();
+        int Count { get; }
+        unsafe TVSIn* UnsafeVertexPtr();
+        ref readonly TVSIn this[int index] { get; }
     }
 
-    public class VertexBuffer : IVertexBuffer<Vector3F>, IDisposable
+    public unsafe class VertexBuffer : IVertexBuffer<Vector3F>, IDisposable
     {
         public readonly Vector3F[] array;
         private readonly GCHandle handle;
-        private readonly IntPtr ptr;
+        private readonly Vector3F* ptr;
 
         public VertexBuffer(Vector3F[] array)
         {
             this.array = array;
             handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-            ptr = handle.AddrOfPinnedObject();
+            ptr = (Vector3F*)handle.AddrOfPinnedObject();
         }
 
         public int Count => array.Length;
-        public unsafe Vector3F* UnsafeVertexPtr() => (Vector3F*)ptr;
+
+        public ref readonly Vector3F this[int index] => ref *(ptr + index);
+
+        public unsafe Vector3F* UnsafeVertexPtr() => ptr;
         public void Dispose() => handle.Free();
     }
 }

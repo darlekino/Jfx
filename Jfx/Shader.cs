@@ -17,7 +17,7 @@ namespace Jfx
     public interface IFragmentShader<TFIn>
         where TFIn : unmanaged
     {
-        Vector4F ExecuteStage(in Vector4F fragCoord, in TFIn fsin);
+        bool ExecuteStage(in Vector4F fragCoord, in TFIn fsin, out Vector4F color);
     }
 
     public interface IShaders<TVIn, TFIn>
