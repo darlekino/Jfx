@@ -24,6 +24,10 @@ namespace Jfx
         where TVIn : unmanaged
         where TFIn : unmanaged
     {
+        PrimitiveTopology PrimitiveTopology { get; }
+        Processing Processing { get; }
+        Interpolation Interpolation { get; }
+
         public IVertexShader<TVIn, TFIn> VertexShader { get; }
         public IFragmentShader<TFIn> FragmentShader { get; }
     }

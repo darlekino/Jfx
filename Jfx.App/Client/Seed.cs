@@ -73,8 +73,8 @@ namespace Jfx.App.Client
 
             return new Visual[]
             {
-                new Visual(tr0, new Shaders(Color.Goldenrod.ToVector()), PrimitiveTopology.TriangleStrip, Processing.Parallel),
-                new Visual(tr1, new Shaders(Color.Cyan.ToVector()), PrimitiveTopology.TriangleList, Processing.Parallel),
+                new Visual(tr0, new Shaders(PrimitiveTopology.TriangleStrip, Processing.Parallel, Interpolation.Undefined, Color.Goldenrod.ToVector())),
+                new Visual(tr1, new Shaders(PrimitiveTopology.TriangleList, Processing.Parallel, Interpolation.Undefined, Color.Cyan.ToVector())),
             };
         }
     }

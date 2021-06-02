@@ -276,7 +276,7 @@ namespace Jfx.App.UI.Gdi
             foreach (var v in visuals)
             {
                 v.Shaders.Update(Camera.MatrixToClip);
-                pipeline.Render(v.Shaders, v.GetVertexBuffer(), v.PrimitiveTopology, v.Processing);
+                pipeline.Render(v.Shaders, v.GetVertexBuffer());
             }
 
             // flush and swap buffers

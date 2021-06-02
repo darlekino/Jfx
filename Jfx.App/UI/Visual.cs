@@ -9,15 +9,11 @@ namespace Jfx.App.UI
         private readonly VertexBuffer vertexBuffer;
 
         public Shaders Shaders { get; }
-        public PrimitiveTopology PrimitiveTopology { get; }
-        public Processing Processing { get; }
 
-        public Visual(IModel model, Shaders shader, PrimitiveTopology primitiveTopology, Processing processing)
+        public Visual(IModel model, Shaders shader)
         {
             this.model = model;
             Shaders = shader;
-            PrimitiveTopology = primitiveTopology;
-            Processing = processing;
             this.vertexBuffer = new VertexBuffer(model.Positions);
         }
 
@@ -64,10 +60,17 @@ namespace Jfx.App.UI
         public IVertexShader<Vector3F, Nothing> VertexShader => vertexShader;
         public IFragmentShader<Nothing> FragmentShader => fragmentShader;
 
-        public Shaders(Vector4F? color = null)
+        public PrimitiveTopology PrimitiveTopology { get; }
+        public Processing Processing { get; }
+        public Interpolation Interpolation { get; }
+
+        public Shaders(PrimitiveTopology primitiveTopology, Processing processing, Interpolation interpolation, Vector4F? color = null)
         {
             vertexShader = new VertexShader();
             fragmentShader = new FragmentShader(color);
+            PrimitiveTopology = primitiveTopology;
+            Processing = processing;
+            Interpolation = interpolation;
         }
 
         public void Update(in Matrix4F matrixToClip) => vertexShader.Update(matrixToClip);

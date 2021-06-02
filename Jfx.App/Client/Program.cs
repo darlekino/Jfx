@@ -28,7 +28,7 @@ namespace Jfx.App.Client
             var matrix = Matrix4F.Scale(10) * Matrix4F.Rotate(UnitVector3F.XAxis.ToVector(), MathF.PI * 0.5f);
 
             // point cloud source: http://graphics.stanford.edu/data/3Dscanrep/
-            var bunny1 = Seed.Bunny().Select(x => Vector3F.Transform(x, matrix));
+            var bunny1 = Seed.Bunny().Select(x => Vector3F.Transform(x, matrix)).ToArray();
 
             var x = new Model(new Vector3F(0, 0, 0), new Vector3F(1, 0, 0));
             var y = new Model(new Vector3F(0, 0, 0), new Vector3F(0, 1, 0));
@@ -36,15 +36,15 @@ namespace Jfx.App.Client
 
             Visual[] cube = Seed.Cube()
                 .Select(polyline => new Model(polyline.Select(v => Vector3F.Transform(v, Matrix4F.Translate(-0.5f, -0.5f, -0.5f))).ToArray()))
-                .Select(m => new Visual(m, new Shaders(Color.White.ToVector()), PrimitiveTopology.LineStrip, Processing.Sequential))
+                .Select(m => new Visual(m, new Shaders(PrimitiveTopology.LineStrip, Processing.Sequential, Interpolation.Undefined, Color.White.ToVector())))
                 .ToArray();
 
             visuals = new Visual[]
             {
-                //new Visual(new Model(bunny1), new Shader(), PrimitiveTopology.PointList, Processing.Parallel),
-                new Visual(x, new Shaders(Color.Red.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
-                new Visual(y, new Shaders(Color.LawnGreen.ToVector()), PrimitiveTopology.LineList, Processing.Sequential),
-                new Visual(z, new Shaders(Color.Blue.ToVector()), PrimitiveTopology.LineList, Processing.Sequential)
+                new Visual(new Model(bunny1), new Shaders(PrimitiveTopology.PointList, Processing.Parallel, Interpolation.Undefined)),
+                new Visual(x, new Shaders(PrimitiveTopology.LineList, Processing.Sequential, Interpolation.Undefined, Color.Red.ToVector())),
+                new Visual(y, new Shaders(PrimitiveTopology.LineList, Processing.Sequential, Interpolation.Undefined, Color.LawnGreen.ToVector())),
+                new Visual(z, new Shaders(PrimitiveTopology.LineList, Processing.Sequential, Interpolation.Undefined, Color.Blue.ToVector()))
             }
             .Concat(cube)
             .Concat(Seed.Triangles())

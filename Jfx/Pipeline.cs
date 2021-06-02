@@ -4,6 +4,28 @@ using System.Threading.Tasks;
 
 namespace Jfx
 {
+    public interface IInterpolate<TValue> :
+        IInterpolateMultiply<TValue>,
+        IInterpolateLinear<TValue>,
+        IInterpolateBarycentric<TValue>
+    {
+    }
+
+    public interface IInterpolateMultiply<out TValue>
+    {
+        TValue InterpolateMultiply(float multiplier);
+    }
+
+    public interface IInterpolateLinear<TValue>
+    {
+        TValue InterpolateLinear(in TValue other, float alpha);
+    }
+
+    public interface IInterpolateBarycentric<TValue>
+    {
+        TValue InterpolateBarycentric(in TValue other0, in TValue other1, Vector3F barycentric);
+    }
+
     public enum PrimitiveTopology
     {
         PointList,
@@ -19,6 +41,12 @@ namespace Jfx
         Sequential
     }
 
+    public enum Interpolation
+    {
+        Undefined,
+        Linear
+    }
+
     public class Pipeline
     {
         private IFrameBuffer FrameBuffer { get; }
@@ -30,15 +58,15 @@ namespace Jfx
             FrameBuffer = frameBuffer!;
         }
 
-        public void Render<TVSIn, TFSIn>(IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer, PrimitiveTopology primitiveTopology, Processing processing)
+        public void Render<TVSIn, TFSIn>(IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
             where TVSIn : unmanaged
-            where TFSIn : unmanaged
+             where TFSIn : unmanaged, IInterpolate<TFSIn>
         {
-            switch (primitiveTopology)
+            switch (shaders.PrimitiveTopology)
             {
                 case PrimitiveTopology.PointList:
                     {
-                        switch (processing)
+                        switch (shaders.Processing)
                         {
                             case Processing.Parallel: PointListTopology.ParallerRender(this, shaders, buffer); break;
                             case Processing.Sequential: PointListTopology.SequentialRender(this, shaders, buffer); break;
@@ -47,7 +75,7 @@ namespace Jfx
                     break;
                 case PrimitiveTopology.LineList:
                     {
-                        switch (processing)
+                        switch (shaders.Processing)
                         {
                             case Processing.Parallel: Line.ListTopology.ParallerRender(this, shaders, buffer); break;
                             case Processing.Sequential: Line.ListTopology.SequentialRender(this, shaders, buffer); break;
@@ -56,7 +84,7 @@ namespace Jfx
                     break;
                 case PrimitiveTopology.LineStrip:
                     {
-                        switch (processing)
+                        switch (shaders.Processing)
                         {
                             case Processing.Parallel: Line.StripTopology.ParallerRender(this, shaders, buffer); break;
                             case Processing.Sequential: Line.StripTopology.SequentialRender(this, shaders, buffer); break;
@@ -65,7 +93,7 @@ namespace Jfx
                     break;
                 case PrimitiveTopology.TriangleList:
                     {
-                        switch (processing)
+                        switch (shaders.Processing)
                         {
                             case Processing.Parallel: Triangle.ListTopology.ParallerRender(this, shaders, buffer); break;
                             case Processing.Sequential: Triangle.ListTopology.SequentialRender(this, shaders, buffer); break;
@@ -74,7 +102,7 @@ namespace Jfx
                     break;
                 case PrimitiveTopology.TriangleStrip:
                     {
-                        switch (processing)
+                        switch (shaders.Processing)
                         {
                             case Processing.Parallel: Triangle.StripTopology.ParallerRender(this, shaders, buffer); break;
                             case Processing.Sequential: Triangle.StripTopology.SequentialRender(this, shaders, buffer); break;
@@ -98,7 +126,7 @@ namespace Jfx
         private static class Clipping
         {
             public static bool IsOutside<TFSIn>(in Vector4F position)
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 return false;
             }
@@ -108,24 +136,22 @@ namespace Jfx
         {
             public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                 where TVSIn : unmanaged
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
-                TVSIn* vsin = buffer.UnsafeVertexPtr();
-                Parallel.For(0, buffer.Count, i => Render(pipeline, shaders, *(vsin + i)));
+                Parallel.For(0, buffer.Count, i => Render(pipeline, shaders, buffer[i]));
             }
 
             public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                 where TVSIn : unmanaged
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
-                TVSIn* vsin = buffer.UnsafeVertexPtr();
                 for (int i = 0; i < buffer.Count; i++)
-                    Render(pipeline, shaders, *(vsin + i));
+                    Render(pipeline, shaders, buffer[i]);
             }
 
             private static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shader, in TVSIn vsin)
                 where TVSIn : unmanaged
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 // Vertex shader stage
                 Vector4F position = shader.VertexShader.ExecuteStage(vsin, out TFSIn fsin);
@@ -252,7 +278,7 @@ namespace Jfx
 
             private static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, in TVSIn vsin0, in TVSIn vsin1)
                 where TVSIn : unmanaged
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 Vector4F position1 = shaders.VertexShader.ExecuteStage(vsin0, out TFSIn fsin0);
                 Vector4F position2 = shaders.VertexShader.ExecuteStage(vsin1, out TFSIn fsin1);
@@ -264,7 +290,7 @@ namespace Jfx
             }
 
             private static void Rasterize<TFSIn>(Pipeline pipeline, IFragmentShader<TFSIn> fragmentShader, in Vector4F p0, in Vector4F p1)
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
 
             {
                 foreach (var (x, y) in new BresenhamLine(p0, p1))
@@ -291,25 +317,23 @@ namespace Jfx
 
                 public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     Parallel.For(0, buffer.Count / 2, i =>
                     {
                         int index = i * 2;
-                        Render(pipeline, shaders, *(vsin + index), *(vsin + index + 1));
+                        Render(pipeline, shaders, buffer[index], buffer[index + 1]);
                     });
                 }
 
                 public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     for (int i = 0; i < buffer.Count; i += 2)
-                        Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1));
+                        Render(pipeline, shaders, buffer[i], buffer[i + 1]);
                 }
 
             }
@@ -325,24 +349,20 @@ namespace Jfx
 
                 public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
-                    Parallel.For(0, buffer.Count - 1, i => Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1)));
+                    Parallel.For(0, buffer.Count - 1, i => Render(pipeline, shaders, buffer[i], buffer[i + 1]));
                 }
 
                 public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     for (int i = 0; i < buffer.Count - 1; i++)
-                        Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1));
+                        Render(pipeline, shaders, buffer[i], buffer[i + 1]);
                 }
-
-
             }
         }
 
@@ -366,7 +386,7 @@ namespace Jfx
             private static int TriangleClampY(int value, in Viewport viewport) => Clamp(value, viewport.Y, viewport.Y + viewport.Size.Height);
 
             private readonly struct PrimitiveTriangle<TFSIn> 
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 public readonly Vector4F V0;
                 public readonly Vector4F V1;
@@ -389,7 +409,7 @@ namespace Jfx
 
             private static void Render<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, in TVSIn vsin0, in TVSIn vsin1, in TVSIn vsin2)
                 where TVSIn : unmanaged
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 // Vertex shader stage
                 Vector4F position0 = shaders.VertexShader.ExecuteStage(vsin0, out TFSIn fsin0);
@@ -478,7 +498,7 @@ namespace Jfx
             }
 
             private static void RasterizeTriangleFlatTop<TFSIn>(Pipeline pipeline, IFragmentShader<TFSIn> fragmentShader, in PrimitiveTriangle<TFSIn> primitive, in Vector4F vertexLeft, in Vector4F vertexRight, in Vector4F vertexBottom)
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 float height = vertexBottom.Y - vertexLeft.Y;
                 float invH = 1 / height;
@@ -488,7 +508,7 @@ namespace Jfx
             }
 
             private static void RasterizeTriangleFlatBottom<TFSIn>(Pipeline pipeline, IFragmentShader<TFSIn> fragmentShader, in PrimitiveTriangle<TFSIn> primitive, in Vector4F vertexLeft, in Vector4F vertexRight, in Vector4F vertexTop)
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 float height = vertexLeft.Y - vertexTop.Y;
                 float invH = 1 / height;
@@ -498,7 +518,7 @@ namespace Jfx
             }
 
             private static void RasterizeTriangleFlat<TFSIn>(Pipeline pipeline, IFragmentShader<TFSIn> fragmentShader, in PrimitiveTriangle<TFSIn> primitive, Vector4F edgeLeft, Vector4F edgeRight, Vector4F deltaLeft, Vector4F deltaRight, float height)
-                where TFSIn : unmanaged
+                 where TFSIn : unmanaged, IInterpolate<TFSIn>
             {
                 // get where we start and end vertically
                 int yStart = TriangleClampY((int)MathF.Round(edgeLeft.Y), pipeline.Viewport);
@@ -551,25 +571,23 @@ namespace Jfx
 
                 public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     Parallel.For(0, buffer.Count / 3, i =>
                     {
                         int index = i * 3;
-                        Render(pipeline, shaders, *(vsin + index), *(vsin + index + 1), *(vsin + index + 2));
+                        Render(pipeline, shaders, buffer[index], buffer[index + 1], buffer[index + 2]);
                     });
                 }
 
                 public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     for (int i = 0; i < buffer.Count; i += 3)
-                        Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1), *(vsin + i + 2));
+                        Render(pipeline, shaders, buffer[i], buffer[i + 1], buffer[i + 2]);
                 }
 
             }
@@ -585,21 +603,19 @@ namespace Jfx
 
                 public static unsafe void ParallerRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
-                    Parallel.For(0, buffer.Count - 2, i => Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1), *(vsin + i + 2)));
+                    Parallel.For(0, buffer.Count - 2, i => Render(pipeline, shaders, buffer[i], buffer[i + 1], buffer[i + 2]));
                 }
 
                 public static unsafe void SequentialRender<TVSIn, TFSIn>(Pipeline pipeline, IShaders<TVSIn, TFSIn> shaders, IVertexBuffer<TVSIn> buffer)
                     where TVSIn : unmanaged
-                    where TFSIn : unmanaged
+                     where TFSIn : unmanaged, IInterpolate<TFSIn>
                 {
                     Check(buffer);
-                    TVSIn* vsin = buffer.UnsafeVertexPtr();
                     for (int i = 0; i < buffer.Count - 2; i++)
-                        Render(pipeline, shaders, *(vsin + i), *(vsin + i + 1), *(vsin + i + 2));
+                        Render(pipeline, shaders, buffer[i], buffer[i + 1], buffer[i + 2]);
                 }
 
 

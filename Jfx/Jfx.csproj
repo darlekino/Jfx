@@ -12,8 +12,4 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Jfx.Mathematic\Jfx.Mathematic.csproj" />
-  </ItemGroup>
-
 </Project>
